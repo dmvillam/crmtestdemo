@@ -18,9 +18,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'nombre', 'cedula', 'email1', 'email2', 'direccion', 'empresa_id', 'rol_id', 'password',
     ];
 
     /**
@@ -41,4 +39,22 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public static function findByEmail($email1)
+    {
+        return static::where(compact('email1'))->first();
+    }
+
+    /*
+     * Relations
+     */
+    public function rol()
+    {
+        return $this->belongsTo(Rol::class);
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
 }

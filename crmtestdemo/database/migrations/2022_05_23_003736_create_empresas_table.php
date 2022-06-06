@@ -13,18 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('empresas', function (Blueprint $table) {
             $table->id();
+            $table->string('cedula_juridica');
             $table->string('nombre');
-            $table->unsignedInteger('cedula');
-            $table->string('email1');
-            $table->string('email2');
+            $table->string('telefono');
+            $table->string('email');
+            $table->string('logo');
             $table->string('direccion');
-            $table->unsignedInteger('empresa_id')->nullable();
-            //$table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->unsignedInteger('rol_id');
-            $table->rememberToken();
             $table->timestamps();
         });
     }
@@ -36,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('empresas');
     }
 };
