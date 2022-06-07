@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Models\Post;
 
+Auth::routes();
+
 Route::get('/', function () {
     return view('welcome');
 });

@@ -79,7 +79,7 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function it_creates_a_new_user()
     {
-        $this->withoutExceptionHandling();
+        //$this->withoutExceptionHandling();
 
         $this->post('/usuarios', [
             'nombre' => 'Alan Chávez',
@@ -89,11 +89,10 @@ class UsersModuleTest extends TestCase
             'direccion' => 'Calle Falsa 123',
             'empresa_id' => 2,
             'rol_id' => 1,
-            //'password' => '123456',
+            'password' => '123456',
         ])->assertRedirect(route('users.index'));
 
-        // assertCredentials is for checking that the password has encrypted correctly
-        /*$this->assertCredentials([
+        $this->assertCredentials([
             'nombre' => 'Alan Chávez',
             'cedula' => 123456,
             'email1' => 'alan_chavez@gmail.com',
@@ -102,79 +101,48 @@ class UsersModuleTest extends TestCase
             'empresa_id' => 2,
             'rol_id' => 1,
             'password' => '123456',
-        ]);*/
-        $this->assertDatabaseHas('users', [
-            'nombre' => 'Alan Chávez',
-            'cedula' => 123456,
-            'email1' => 'alan_chavez@gmail.com',
-            'email2' => 'alan_chavez@hotmail.com',
-            'direccion' => 'Calle Falsa 123',
-            'empresa_id' => 2,
-            'rol_id' => 1,
-            //'password' => '123456',
         ]);
+        //$this->assertDatabaseHas('users', [...]);
     }
 
     /** @test **/
-    function the_name_is_required()
+    function validate_all_required_fields_on_user_storing()
     {
         $this->from('/usuarios')
             ->post('/usuarios', [
                 'nombre' => '',
-                'cedula' => 123456,
-                'email1' => 'alan_chavez@gmail.com',
-                'email2' => 'alan_chavez@hotmail.com',
-                'direccion' => 'Calle Falsa 123',
-                'empresa_id' => 2,
-                'rol_id' => 1,
-                'password' => '123456',
-            ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['nombre']);
-
-        $this->assertEquals(0, User::count());
-        //$this->assertDatabaseMissing('users', [
-        //    'email1' => 'alan_chavez@gmail.com',
-        //    'email2' => 'alan_chavez@hotmail.com',
-        //]);
-    }
-
-    /** @test **/
-    function the_email1_is_required()
-    {
-        $this->from(route('users.index'))
-            ->post('/usuarios', [
-                'nombre' => 'Duilio',
-                'cedula' => 123456,
+                'cedula' => '',
                 'email1' => '',
-                'email2' => 'duilio@mail.net',
-                'direccion' => 'Calle Falsa 123',
-                'empresa_id' => 2,
-                'rol_id' => 1,
-                'password' => '123456',
+                'email2' => '',
+                'direccion' => '',
+                'empresa_id' => '',
+                'rol_id' => '',
+                'password' => '',
             ])
             ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1']);
+            ->assertSessionHasErrors([
+                'nombre', 'cedula', 'email1', 'email2', 'direccion', 'empresa_id', 'rol_id', 'password'
+            ], null, 'store');
 
         $this->assertEquals(0, User::count());
     }
 
     /** @test **/
-    function the_email1_must_be_valid()
+    function the_emails_must_be_valid()
     {
         $this->from(route('users.index'))
             ->post('/usuarios', [
                 'nombre' => 'Duilio',
                 'cedula' => 123456,
-                'email1' => 'corre_no_valido',
-                'email2' => 'duilio@hotmail.com',
+                'email1' => 'corre_no_valido1',
+                'email2' => 'corre_no_valido2',
                 'direccion' => 'Calle Falsa 123',
                 'empresa_id' => 2,
                 'rol_id' => 1,
                 'password' => '123456',
             ])
             ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1']);
+            ->assertSessionHasErrors(['email1', 'email2'], null, 'store');
 
         $this->assertEquals(0, User::count());
     }
@@ -197,9 +165,70 @@ class UsersModuleTest extends TestCase
                 'password' => '123456',
             ])
             ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1']);
+            ->assertSessionHasErrors(['email1'], null, 'store');
 
         $this->assertEquals(1, User::count());
+    }
+
+    /** @test **/
+    function the_email1_must_be_unique_from_email2_and_viceversa()
+    {
+        User::factory()->create(['email1'=>'test1@test.test','email2'=>'test2@test.test']);
+        $this->from(route('users.index'))
+            ->post('/usuarios', [
+                'nombre' => 'Test',
+                'cedula' => 111111,
+                'email1' => 'test2@test.test',
+                'email2' => 'test1@test.test',
+                'direccion' => 'Test',
+                'empresa_id' => 2,
+                'rol_id' => 1,
+                'password' => '123456',
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHasErrors(['email1', 'email2'], null, 'store');
+
+        $this->assertEquals(1, User::count());
+    }
+
+    /** @test **/
+    function the_email1_and_email2_fields_must_be_different()
+    {
+        $this->from(route('users.index'))
+            ->post('/usuarios', [
+                'nombre' => 'Test',
+                'cedula' => 111111,
+                'email1' => 'test@test.test',
+                'email2' => 'test@test.test',
+                'direccion' => 'Test',
+                'empresa_id' => 2,
+                'rol_id' => 1,
+                'password' => '123456',
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHasErrors(['email1', 'email2'], null, 'store');
+
+        $this->assertEquals(0, User::count());
+    }
+
+    /** @test **/
+    function the_password_is_required()
+    {
+        $this->from('/usuarios')
+            ->post('/usuarios', [
+                'nombre' => 'Test',
+                'cedula' => 123456,
+                'email1' => 'test@gmail.com',
+                'email2' => 'test@hotmail.com',
+                'direccion' => 'test',
+                'empresa_id' => 2,
+                'rol_id' => 1,
+                'password' => '',
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHasErrors(['password'], null, 'store');
+
+        $this->assertEquals(0, User::count());
     }
 
     /** @test **/
@@ -216,7 +245,7 @@ class UsersModuleTest extends TestCase
     function it_updates_an_user()
     {
         $user = User::factory()->create();
-        $this->put(route('users.update', ['user'=>$user]), [
+        $this->put(route('users.update', $user), [
             'nombre' => 'Duilio',
             'cedula' => 33333,
             'email1' => 'duilio@gmail.com',
@@ -224,9 +253,10 @@ class UsersModuleTest extends TestCase
             'direccion' => 'Test',
             'empresa_id' => 3,
             'rol_id' => 2,
+            'password' => '123456',
         ])->assertRedirect(route('users.index'));
 
-        $this->assertDatabaseHas('users', [
+        $this->assertCredentials([
             'nombre' => 'Duilio',
             'cedula' => 33333,
             'email1' => 'duilio@gmail.com',
@@ -234,6 +264,7 @@ class UsersModuleTest extends TestCase
             'direccion' => 'Test',
             'empresa_id' => 3,
             'rol_id' => 2,
+            'password' => '123456',
         ]);
     }
 
@@ -242,7 +273,7 @@ class UsersModuleTest extends TestCase
     {
         $user = User::factory()->create();
         $this->from(route('users.index'))
-            ->put(route('users.update', ['user'=>$user]), [
+            ->put(route('users.update', $user), [
                 'nombre' => '',
                 'cedula' => 123456,
                 'email1' => 'duilio@gmail.com',
@@ -253,9 +284,80 @@ class UsersModuleTest extends TestCase
                 'password' => '123456',
             ])
             ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['nombre']);
+            ->assertSessionHasErrors(['nombre'], null, 'update');
 
         $this->assertDatabaseMissing('users', ['email1'=>'duilio@gmail.com']);
+    }
+
+    /** @test **/
+    function the_email1_must_be_unique_from_email2_and_viceversa_when_updating()
+    {
+        User::factory()->create(['email1' => 'test1@test.test', 'email2' => 'test2@test.test']);
+        $user = User::factory()->create();
+        $this->from(route('users.index'))
+            ->put(route('users.update', $user), [
+                'nombre' => 'Test',
+                'cedula' => 111111,
+                'email1' => 'test2@test.test',
+                'email2' => 'test1@test.test',
+                'direccion' => 'Test',
+                'empresa_id' => 2,
+                'rol_id' => 1,
+                'password' => '123456',
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHasErrors(['email1', 'email2'], null, 'update');
+
+        $this->assertDatabaseMissing('users', ['nombre'=>'Test']);
+    }
+
+    /** @test **/
+    function user_can_swap_email1_and_email2_when_updating()
+    {
+        $user = User::factory()->create(['email1' => 'test1@test.test', 'email2' => 'test2@test.test']);
+        $this->from(route('users.index'))
+            ->put(route('users.update', $user), [
+                'nombre' => 'Test',
+                'cedula' => 111111,
+                'email1' => 'test2@test.test',
+                'email2' => 'test1@test.test',
+                'direccion' => 'Test',
+                'empresa_id' => 2,
+                'rol_id' => 1,
+                'password' => '123456',
+            ])
+            ->assertRedirect(route('users.index'));
+        $this->assertCredentials([
+            'nombre' => 'Test',
+            'cedula' => 111111,
+            'email1' => 'test2@test.test',
+            'email2' => 'test1@test.test',
+            'direccion' => 'Test',
+            'empresa_id' => 2,
+            'rol_id' => 1,
+            'password' => '123456',
+        ]);
+    }
+
+    /** @test **/
+    function the_email1_and_email2_fields_must_be_different_when_updating()
+    {
+        $user = User::factory()->create();
+        $this->from(route('users.index'))
+            ->put(route('users.update', $user), [
+                'nombre' => 'Test',
+                'cedula' => 111111,
+                'email1' => 'test@test.test',
+                'email2' => 'test@test.test',
+                'direccion' => 'Test',
+                'empresa_id' => 2,
+                'rol_id' => 1,
+                'password' => '123456',
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHasErrors(['email1', 'email2'], null, 'update');
+
+        $this->assertDatabaseMissing('users', ['nombre'=>'Test']);
     }
 
     /** @test **/

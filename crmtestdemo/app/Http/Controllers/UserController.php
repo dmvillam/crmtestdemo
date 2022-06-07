@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 use App\Models\User;
@@ -11,6 +12,16 @@ use App\Models\Empresa;
 
 class UserController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+    
     public function index()
     {
         $users = User::all();
@@ -45,53 +56,80 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $data = request()->validate([
+        $validator = Validator::make(request()->all(), [
             'nombre' => 'required',
             'cedula' => 'required',
-            'email1' => 'required|email|unique:users,email1',
-            'email2' => 'required|email|unique:users,email2',
+            'email1' => [
+                'required', 'email', 'different:email2',
+                Rule::unique('users', 'email1'),
+                Rule::unique('users', 'email2'),
+            ],
+            'email2' => [
+                'required', 'email', 'different:email1',
+                Rule::unique('users', 'email1'),
+                Rule::unique('users', 'email2'),
+            ],
             'direccion' => 'required',
             'empresa_id' => 'required',
-            //'password' => 'required',
+            'password' => 'required',
             'rol_id' => 'required',
         ]);
 
-        $data['password'] = bcrypt('dummy');
+        if ($validator->fails()) {
+            return redirect()->route('users.index')
+                ->withErrors($validator, 'store')
+                ->withInput();
+        }
+
+        $data = $validator->validated();
+        
+        $data['password'] = bcrypt($data['password']);
         User::create($data);
-        return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('status', '¡Usuario creado de manera exitosa!');
     }
 
     public function update(User $user)
     {
         $email1 = request()->input('email1');
         $email2 = request()->input('email2');
-        $data = request()->validate([
+        $validator = Validator::make(request()->all(), [
             'nombre' => 'required',
             'cedula' => 'required',
             'email1' => [
-                'required', 'email',
+                'required', 'email', 'different:email2',
                 Rule::unique('users', 'email1')->ignore($user),
-                Rule::unique('users', 'email2'),
+                Rule::unique('users', 'email2')->ignore($user),
             ],
             'email2' => [
-                'required', 'email',
-                Rule::unique('users', 'email1'),
+                'required', 'email', 'different:email1',
+                Rule::unique('users', 'email1')->ignore($user),
                 Rule::unique('users', 'email2')->ignore($user),
             ],
             'direccion' => 'required',
             'empresa_id' => 'required',
-            //'password' => 'required',
+            'password' => '',
             'rol_id' => 'required',
         ]);
 
+        if ($validator->fails()) {
+            return redirect()->route('users.index')
+                ->withErrors($validator, 'update')
+                ->withInput();
+        }
+
+        $data = $validator->validated();
+
+        if ($data['password'] != null) {
+            $data['password'] = bcrypt($data['password']);
+        } else unset($data['password']);
         $user->update($data);
 
-        return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('status', '¡Usuario actualizado de manera exitosa!');
     }
 
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('status', '¡Usuario borrado de manera exitosa!');
     }
 }

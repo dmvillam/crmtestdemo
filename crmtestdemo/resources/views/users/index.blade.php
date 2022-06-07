@@ -7,7 +7,7 @@
   table {
     width: 100% !important;
   }
-  .btn-modificar, .btn-eliminar {
+  .btn-visualizar, .btn-modificar, .btn-eliminar {
     margin-right: 8px;
   }
   .invalid-feedback {
@@ -40,7 +40,6 @@
         </div>
       </div>
 
-      <h2>Tabla de usuarios</h2>
       <div class="table-responsive">
         <table class="table table-striped table-sm">
           <thead>
@@ -60,22 +59,36 @@
               <td>{{ $user->empresa->nombre }}</td>
               <td>{{ $user->rol->nombre }}</td>
               <td>
-                <a href="#" class="link-info btn-visualizar" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="Visualizar"><i class="fa-solid fa-eye"></i></a>
+                <a href="#" class="link-secondary btn-visualizar" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="Visualizar"><i class="fa-solid fa-eye"></i></a>
+                
                 <a href="#" class="link-secondary btn-modificar" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="Modificar"><i class="fa-solid fa-pencil"></i></a>
-                <a href="#" class="link-danger btn-eliminar" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="Eliminar"><i class="fa-solid fa-trash-can"></i></a>
+                
+                <a href="#" class="link-secondary btn-eliminar" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="Eliminar"><i class="fa-solid fa-trash-can"></i></a>
               </td>
             </tr>
             @empty
-            <tr><td colspan="7"><em>No hay usuarios para mostrar por el momento...</em></td></tr>
+            <tr><td colspan="5"><em>No hay usuarios para mostrar por el momento...</em></td></tr>
             @endforelse
           </tbody>
         </table>
       </div>
+
       <form id="form-eliminar-usuario" method="POST">
         {{ csrf_field() }}
         <input type="hidden" name="_method" value="DELETE"/>
         <input type="hidden" name="delete_user" id="delete_user" value="">
       </form>
+
+      <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">
+              Hello, world! This is a toast message.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
 @endsection
 
 @section('scripts')
@@ -104,8 +117,11 @@
       $('#form-crear-usuario').submit()
     })
 
-    @if ($errors->any())
+    @if ($errors->store->any())
       var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'))
+      myModal.show()
+    @elseif ($errors->update->any())
+      var myModal = new bootstrap.Modal(document.getElementById('modal-user-edit'))
       myModal.show()
     @endif
 
@@ -200,6 +216,14 @@
       e.preventDefault()
       $('#form-eliminar-usuario').submit()
     })
+
+@if (session('status'))
+    const toastLiveExample = document.getElementById('liveToast')
+    const toast = new bootstrap.Toast(toastLiveExample)
+    $('#liveToast .toast-body').text(`{{ session('status') }}`)
+    toast.show()
+@endif
+
   })
 </script>
 @endsection
