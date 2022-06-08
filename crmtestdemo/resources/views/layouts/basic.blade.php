@@ -92,7 +92,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content rounded-4 shadow">
       <div class="modal-header p-5 pb-4 border-bottom-0">
-        <h5 class="modal-title">Modal title</h5>
+        <h5 class="modal-title">{{env('COMPANY_NAME')}}</h5>
         <h2 class="fw-bold mb-0">@yield('form-title')</h2>
       </div>
 

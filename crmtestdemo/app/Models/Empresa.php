@@ -9,6 +9,15 @@ class Empresa extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'cedula_juridica', 'nombre', 'telefono', 'email', 'logo', 'direccion'
+    ];
+
     /*
      * Relations
      */

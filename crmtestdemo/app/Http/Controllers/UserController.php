@@ -39,11 +39,6 @@ class UserController extends Controller
         return response()->json($userJson);
     }
 
-    public function create()
-    {
-        return "Crear nuevo usuario";
-    }
-
     public function edit(User $user)
     {
         return response()->json($user->toArray());
@@ -53,7 +48,7 @@ class UserController extends Controller
     {
         $validator = Validator::make(request()->all(), [
             'nombre' => 'required',
-            'cedula' => 'required',
+            'cedula' => 'required|numeric',
             'email1' => [
                 'required', 'email', 'different:email2',
                 Rule::unique('users', 'email1'),
@@ -89,7 +84,7 @@ class UserController extends Controller
         $email2 = request()->input('email2');
         $validator = Validator::make(request()->all(), [
             'nombre' => 'required',
-            'cedula' => 'required',
+            'cedula' => 'required|numeric',
             'email1' => [
                 'required', 'email', 'different:email2',
                 Rule::unique('users', 'email1')->ignore($user),

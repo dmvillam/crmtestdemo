@@ -5,16 +5,13 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-
-use App\Models\User;
-use App\Models\Rol;
-use App\Models\Empresa;
-
 use Illuminate\Foundation\Testing\Concerns\ImpersonatesUsers;
 
-class UsersModuleTest extends TestCase
+use App\Models\Empresa;
+
+class CompaniesModuleTest extends TestCase
 {
-    use RefreshDatabase;
+   use RefreshDatabase;
 
     private function getFakeUser()
     {
@@ -35,127 +32,127 @@ class UsersModuleTest extends TestCase
      *
      * @return void
      */
-    function it_shows_the_user_list_page()
+    function it_shows_the_companies_list_page()
     {
         $fake_user = $this->getFakeUser();
-        User::factory()->create(['nombre' => 'Alan']);
-        User::factory()->create(['nombre' => 'Laura']);
-
-        $response = $this->actingAs($fake_user)->get('/usuarios');
-
-        $response->assertStatus(200);
-        $response->assertViewIs(route('users.index'));
-        $response->assertSee('Usuarios');
-        $response->assertSee('Alan');
-        $response->assertSee('Laura');
-    }
-
-    /** @test **/
-    function it_shows_a_default_message_if_the_users_list_is_empty()
-    {
-        $fake_user = $this->getFakeUser();
-        $response = $this->actingAs($fake_user)->get('/usuarios');
-        $response->assertStatus(200);
-        $response->assertSee('No hay usuarios para mostrar por el momento...');
-    }
-
-    /** @test **/
-    function it_displays_the_user_details()
-    {
-        $fake_user = $this->getFakeUser();
-
-        $rol = Rol::create(['nombre' => 'Cliente']);
-        $empresa = Empresa::factory()->create();
-        $user = User::factory()->create(['empresa_id'=>$empresa->id, 'rol_id'=>$rol->id]);
+        Empresa::factory()->create(['nombre' => 'Company 1']);
+        Empresa::factory()->create(['nombre' => 'Company 2']);
 
         $response = $this->actingAs($fake_user)
-            ->getJson(route('users.show', $user))
+            ->get(route('companies.index'))
+            ->assertStatus(200)
+            ->assertViewIs(route('users.index'))
+            ->assertViewHas('empresas')
+            ->assertSee('Empresas')
+            ->assertSee('Company 1')
+            ->assertSee('Company 2');
+    }
+
+    /** @test **/
+    function it_shows_a_default_message_if_the_companies_list_is_empty()
+    {
+        $fake_user = $this->getFakeUser();
+        $response = $this->actingAs($fake_user)->get(route('companies.index'));
+        $response->assertStatus(200);
+        $response->assertSee('No hay empresas para mostrar por el momento...');
+    }
+
+    /** @test **/
+    function it_displays_the_company_details()
+    {
+        $fake_user = $this->getFakeUser();
+
+        $empresa = Empresa::factory()->create();
+
+        $response = $this->actingAs($fake_user)
+            ->getJson(route('companies.show', $user))
             ->assertStatus(200)
             ->assertJson([
-                'nombre'=>$user->nombre,
-                'empresa' => $empresa->nombre,
-                'rol' => $rol->nombre,
-            ]);
+                'company'=>$empresa->nombre,
+            ])
+            ->assertSee($empresa->cedula_juridica)
+            ->assertSee($empresa->telefono)
+            ->assertSee($empresa->correo)
+            ->assertSee($empresa->direccion);
     }
 
     /** @test **/
-    function it_displays_the_user2_details()
+    function it_displays_the_company2_details()
     {
         $fake_user = $this->getFakeUser();
 
-        $rol = Rol::create(['nombre' => 'Cliente']);
-        User::factory()->count(49)->create();
-        $user = User::factory()->create(['rol_id'=>$rol->id]);
+        Empresa::factory()->count(49)->create();
+        $empresa = Empresa::factory()->create();
 
         $response = $this->actingAs($fake_user)
-            ->getJson(route('users.show', $user))
+            ->getJson(route('companies.show', $empresa))
             ->assertStatus(200)
-            ->assertJson(['nombre'=>$user->nombre]);
+            ->assertJson(['company'=>$empresa->nombre]);
     }
 
     /** @test **/
-    function it_displays_a_404_error_if_the_user_is_not_found()
+    function it_displays_a_404_error_if_the_company_is_not_found()
     {
         $fake_user = $this->getFakeUser();
-        
-        $this->actingAs($fake_user)->get('/usuarios/1')
+        $this->actingAs($fake_user)
+            ->get(route('companies.show', '1'))
             ->assertStatus(404);
     }
 
     /** @test **/
-    function it_creates_a_new_user()
+    function it_loads_the_new_company_page()
     {
-        //$this->withoutExceptionHandling();
-
         $fake_user = $this->getFakeUser();
-        
-        $this->actingAs($fake_user)->post('/usuarios', [
-            'nombre' => 'Alan Chávez',
-            'cedula' => 123456,
-            'email1' => 'alan_chavez@gmail.com',
-            'email2' => 'alan_chavez@hotmail.com',
-            'direccion' => 'Calle Falsa 123',
-            'empresa_id' => 2,
-            'rol_id' => 1,
-            'password' => '123456',
-        ])->assertRedirect(route('users.index'));
-
-        $this->assertCredentials([
-            'nombre' => 'Alan Chávez',
-            'cedula' => 123456,
-            'email1' => 'alan_chavez@gmail.com',
-            'email2' => 'alan_chavez@hotmail.com',
-            'direccion' => 'Calle Falsa 123',
-            'empresa_id' => 2,
-            'rol_id' => 1,
-            'password' => '123456',
-        ]);
-        //$this->assertDatabaseHas('users', [...]);
+        $this->actingAs($fake_user)
+            ->get(route('companies.index'))
+            ->assertStatus(200)
+            ->assertSee('Crear nueva empresa');
     }
 
     /** @test **/
-    function validate_all_required_fields_on_user_storing()
+    function it_creates_a_new_company()
+    {
+        $fake_user = $this->getFakeUser();
+        
+        $this->actingAs($fake_user)->post(route('companies.store'), [
+            'cedula_juridica'   => 'a',
+            'nombre'            => 'a',
+            'telefono'          => '1',
+            'email'             => 'a@a.a',
+            'logo'              => 'a',
+            'direccion'         => 'a',
+        ])->assertRedirect(route('companies.index'));
+
+        $this->assertDatabaseHas('empresas', [
+            'cedula_juridica'   => 'a',
+            'nombre'            => 'a',
+            'telefono'          => '1',
+            'email'             => 'a@a.a',
+            'logo'              => 'a',
+            'direccion'         => 'a',
+        ]);
+    }
+
+    /** @test **/
+    function validate_all_required_fields_on_company_storing()
     {
         $fake_user = $this->getFakeUser();
         
         $this->actingAs($fake_user)
-            ->from('/usuarios')
-            ->post('/usuarios', [
-                'nombre' => '',
-                'cedula' => '',
-                'email1' => '',
-                'email2' => '',
-                'direccion' => '',
-                'empresa_id' => '',
-                'rol_id' => '',
-                'password' => '',
+            ->from(route('companies.index'))
+            ->post(route('companies.store'), [
+                'cedula_juridica'   => '',
+                'nombre'            => '',
+                'telefono'          => '',
+                'email'             => '',
+                'direccion'         => '',
             ])
-            ->assertRedirect(route('users.index'))
+            ->assertRedirect(route('companies.index'))
             ->assertSessionHasErrors([
-                'nombre', 'cedula', 'email1', 'email2', 'direccion', 'empresa_id', 'rol_id', 'password'
+                'cedula_juridica', 'nombre', 'telefono', 'email', 'direccion'
             ], null, 'store');
 
-        $this->assertEquals(0, User::count());
+        $this->assertEquals(0, Empresa::count());
     }
 
     /** @test **/
