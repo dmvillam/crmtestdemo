@@ -100,7 +100,10 @@
   <input class="form-control form-control-dark w-100 rounded-0 border-0" type="text" placeholder="Search" aria-label="Search">
   <div class="navbar-nav">
     <div class="nav-item text-nowrap">
-      <a class="nav-link px-3" href="#">Sign out</a>
+      <form id="logout-form" action="{{ route('logout') }}" method="POST">
+        @csrf
+      </form>
+      <a href="#" class="nav-link px-3 btn-sign-out">Sign out</a>
     </div>
   </div>
 </header>
@@ -213,5 +216,18 @@
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.12.1/af-2.4.0/b-2.2.3/b-html5-2.2.3/b-print-2.2.3/date-1.1.2/r-2.3.0/datatables.min.js"></script>
 
     @yield('scripts')
+
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('[href="#"]').on('click', function(e) {
+          e.preventDefault()
+        })
+
+        $('.btn-sign-out').on('click', function(e) {
+          e.preventDefault()
+          $('#logout-form').submit()
+        })
+      })
+    </script>
   </body>
 </html>

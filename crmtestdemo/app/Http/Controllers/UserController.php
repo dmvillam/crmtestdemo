@@ -25,7 +25,6 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-
         $roles = Rol::all();
         $empresas = Empresa::all();
 
@@ -34,12 +33,8 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $userJson = $user->toArray();
-        unset($userJson['created_at']);
-        unset($userJson['updated_at']);
-        unset($userJson['empresa_id']);
-        unset($userJson['rol_id']);
-        $userJson['empresa'] = $user->empresa->nombre;
+        $userJson = $user->select('nombre', 'cedula', 'email1', 'email2', 'direccion')->findOrFail($user->id)->toArray();
+        $userJson['empresa'] = $user->empresa ? $user->empresa->nombre : 'Ninguna';
         $userJson['rol'] = $user->rol->nombre;
         return response()->json($userJson);
     }

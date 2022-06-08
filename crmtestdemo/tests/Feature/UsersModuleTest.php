@@ -10,9 +10,25 @@ use App\Models\User;
 use App\Models\Rol;
 use App\Models\Empresa;
 
+use Illuminate\Foundation\Testing\Concerns\ImpersonatesUsers;
+
 class UsersModuleTest extends TestCase
 {
     use RefreshDatabase;
+
+    private function getFakeUser()
+    {
+        return new User([
+            'id' => 1,
+            'nombre' => 'a',
+            'cedula' => 123456,
+            'email1' => 't1@t.t',
+            'email2' => 't2@t.t',
+            'direccion' => 'a',
+            'empresa_id' => 1,
+            'rol_id' => 1,
+        ]);
+    }
 
     /**
      * A basic feature test example.
@@ -36,7 +52,8 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function it_shows_a_default_message_if_the_users_list_is_empty()
     {
-        $response = $this->get('/usuarios');
+        $fake_user = $this->getFakeUser();
+        $response = $this->actingAs($fake_user)->get('/usuarios');
         $response->assertStatus(200);
         $response->assertSee('No hay usuarios para mostrar por el momento...');
     }
@@ -44,34 +61,53 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function it_displays_the_user_details()
     {
+        $fake_user = $this->getFakeUser();
+
         $rol = Rol::create(['nombre' => 'Cliente']);
         $empresa = Empresa::factory()->create();
-        $user = User::factory()->create([
-            'nombre'=>'Alan Chávez',
-            'rol_id' => $rol->id,
-            'empresa_id' => $empresa->id,
-        ]);
+        $user = User::factory()->create(['empresa_id'=>$empresa->id, 'rol_id'=>$rol->id]);
 
-        $response = $this->getJson("/usuarios/{$user->id}");
-        $response->assertStatus(200)
+        $response = $this->actingAs($fake_user)
+            ->getJson(route('users.show', $user))
+            ->assertStatus(200)
             ->assertJson([
-                'nombre'=>'Alan Chávez',
+                'nombre'=>$user->nombre,
                 'empresa' => $empresa->nombre,
                 'rol' => $rol->nombre,
             ]);
     }
 
     /** @test **/
+    function it_displays_the_user2_details()
+    {
+        $fake_user = $this->getFakeUser();
+
+        $rol = Rol::create(['nombre' => 'Cliente']);
+        User::factory()->count(49)->create();
+        $user = User::factory()->create(['rol_id'=>$rol->id]);
+
+        $response = $this->actingAs($fake_user)
+            ->getJson(route('users.show', $user))
+            ->assertStatus(200)
+            ->assertJson(['nombre'=>$user->nombre]);
+    }
+
+    /** @test **/
     function it_displays_a_404_error_if_the_user_is_not_found()
     {
-        $this->get('/usuarios/1')
+        $fake_user = $this->getFakeUser();
+        
+        $this->actingAs($fake_user)->get('/usuarios/1')
             ->assertStatus(404);
     }
 
     /** @test **/
     function it_loads_the_new_user_page()
     {
-        $this->get('/usuarios/nuevo')
+        $fake_user = $this->getFakeUser();
+        
+        $this->actingAs($fake_user)
+            ->get('/usuarios/nuevo')
             ->assertStatus(200)
             ->assertSee('Crear nuevo usuario');
     }
@@ -81,7 +117,9 @@ class UsersModuleTest extends TestCase
     {
         //$this->withoutExceptionHandling();
 
-        $this->post('/usuarios', [
+        $fake_user = $this->getFakeUser();
+        
+        $this->actingAs($fake_user)->post('/usuarios', [
             'nombre' => 'Alan Chávez',
             'cedula' => 123456,
             'email1' => 'alan_chavez@gmail.com',
@@ -108,7 +146,10 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function validate_all_required_fields_on_user_storing()
     {
-        $this->from('/usuarios')
+        $fake_user = $this->getFakeUser();
+        
+        $this->actingAs($fake_user)
+            ->from('/usuarios')
             ->post('/usuarios', [
                 'nombre' => '',
                 'cedula' => '',
@@ -130,7 +171,10 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function the_emails_must_be_valid()
     {
-        $this->from(route('users.index'))
+        $fake_user = $this->getFakeUser();
+        
+        $this->actingAs($fake_user)
+            ->from(route('users.index'))
             ->post('/usuarios', [
                 'nombre' => 'Duilio',
                 'cedula' => 123456,
@@ -150,10 +194,13 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function the_email1_must_be_unique()
     {
+        $fake_user = $this->getFakeUser();
+        
         User::factory()->create([
             'email1' => 'duilio@styde.net',
         ]);
-        $this->from(route('users.index'))
+        $this->actingAs($fake_user)
+            ->from(route('users.index'))
             ->post('/usuarios', [
                 'nombre' => 'Duilio',
                 'cedula' => 123456,
@@ -173,8 +220,11 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function the_email1_must_be_unique_from_email2_and_viceversa()
     {
+        $fake_user = $this->getFakeUser();
+        
         User::factory()->create(['email1'=>'test1@test.test','email2'=>'test2@test.test']);
-        $this->from(route('users.index'))
+        $this->actingAs($fake_user)
+            ->from(route('users.index'))
             ->post('/usuarios', [
                 'nombre' => 'Test',
                 'cedula' => 111111,
@@ -194,7 +244,10 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function the_email1_and_email2_fields_must_be_different()
     {
-        $this->from(route('users.index'))
+        $fake_user = $this->getFakeUser();
+        
+        $this->actingAs($fake_user)
+            ->from(route('users.index'))
             ->post('/usuarios', [
                 'nombre' => 'Test',
                 'cedula' => 111111,
@@ -214,7 +267,10 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function the_password_is_required()
     {
-        $this->from('/usuarios')
+        $fake_user = $this->getFakeUser();
+        
+        $this->actingAs($fake_user)
+            ->from('/usuarios')
             ->post('/usuarios', [
                 'nombre' => 'Test',
                 'cedula' => 123456,
@@ -234,8 +290,11 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function it_edits_the_user_details_page()
     {
+        $fake_user = $this->getFakeUser();
+        
         $user = User::factory()->create(['nombre'=>'Alan Chávez']);
-        $this->getJson(route('users.edit', ['user'=>$user]))
+        $this->actingAs($fake_user)
+            ->getJson(route('users.edit', ['user'=>$user]))
             ->assertStatus(200)
             //->assertViewHas('user')
             ->assertJson(['nombre'=>'Alan Chávez']);
@@ -244,8 +303,10 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function it_updates_an_user()
     {
+        $fake_user = $this->getFakeUser();
+        
         $user = User::factory()->create();
-        $this->put(route('users.update', $user), [
+        $this->actingAs($fake_user)->put(route('users.update', $user), [
             'nombre' => 'Duilio',
             'cedula' => 33333,
             'email1' => 'duilio@gmail.com',
@@ -271,8 +332,11 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function the_name_is_required_when_updating_an_user()
     {
+        $fake_user = $this->getFakeUser();
+        
         $user = User::factory()->create();
-        $this->from(route('users.index'))
+        $this->actingAs($fake_user)
+            ->from(route('users.index'))
             ->put(route('users.update', $user), [
                 'nombre' => '',
                 'cedula' => 123456,
@@ -292,9 +356,12 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function the_email1_must_be_unique_from_email2_and_viceversa_when_updating()
     {
+        $fake_user = $this->getFakeUser();
+        
         User::factory()->create(['email1' => 'test1@test.test', 'email2' => 'test2@test.test']);
         $user = User::factory()->create();
-        $this->from(route('users.index'))
+        $this->actingAs($fake_user)
+            ->from(route('users.index'))
             ->put(route('users.update', $user), [
                 'nombre' => 'Test',
                 'cedula' => 111111,
@@ -314,8 +381,11 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function user_can_swap_email1_and_email2_when_updating()
     {
+        $fake_user = $this->getFakeUser();
+        
         $user = User::factory()->create(['email1' => 'test1@test.test', 'email2' => 'test2@test.test']);
-        $this->from(route('users.index'))
+        $this->actingAs($fake_user)
+            ->from(route('users.index'))
             ->put(route('users.update', $user), [
                 'nombre' => 'Test',
                 'cedula' => 111111,
@@ -342,8 +412,11 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function the_email1_and_email2_fields_must_be_different_when_updating()
     {
+        $fake_user = $this->getFakeUser();
+        
         $user = User::factory()->create();
-        $this->from(route('users.index'))
+        $this->actingAs($fake_user)
+            ->from(route('users.index'))
             ->put(route('users.update', $user), [
                 'nombre' => 'Test',
                 'cedula' => 111111,
@@ -363,9 +436,12 @@ class UsersModuleTest extends TestCase
     /** @test **/
     function it_deletes_a_user()
     {
+        $fake_user = $this->getFakeUser();
+        
         $user = User::factory()->create();
 
-        $this->delete(route('users.delete', ['user'=>$user]))
+        $this->actingAs($fake_user)
+            ->delete(route('users.delete', ['user'=>$user]))
             ->assertRedirect(route('users.index'));
         $this->assertSame(0, User::count());
         $this->assertDatabaseMissing('users', [

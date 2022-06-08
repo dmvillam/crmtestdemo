@@ -56,7 +56,7 @@
             <tr data-user-id="{{ $user->id }}">
               <td>{{ $user->id }}</td>
               <td>{{ $user->nombre }}</td>
-              <td>{{ $user->empresa->nombre }}</td>
+              <td>{{ $user->empresa ? $user->empresa->nombre : 'Ninguna' }}</td>
               <td>{{ $user->rol->nombre }}</td>
               <td>
                 <a href="#" class="link-secondary btn-visualizar" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="Visualizar"><i class="fa-solid fa-eye"></i></a>
@@ -103,7 +103,7 @@
     $('table').DataTable({
       responsive: true,
       buttons: [
-        'copy', 'excel', 'pdf'
+        'copy', 'csv', 'excel', 'pdf', 'print'
       ],
       dom: 'lfrtBip',
       "drawCallback": function( settings ) {
