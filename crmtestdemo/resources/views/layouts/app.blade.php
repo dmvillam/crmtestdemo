@@ -114,26 +114,28 @@
       <div class="position-sticky pt-3">
         <ul class="nav flex-column">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">
+            <a class="nav-link @if (Route::currentRouteName()=='home') active @endif" aria-current="page" href="{{route('home')}}">
               <span data-feather="home" class="align-text-bottom"></span>
-              Dashboard
+              Principal
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link @if (Route::currentRouteName()=='users.index') active @endif" href="{{route('users.index')}}">
+              <span data-feather="users" class="align-text-bottom"></span>
+              Usuarios
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link @if (Route::currentRouteName()=='companies.index') active @endif" href="{{route('companies.index')}}">
+              <span data-feather="layers" class="align-text-bottom"></span>
+              Empresas
+            </a>
+          </li>
+
+          <?php /*
           <li class="nav-item">
             <a class="nav-link" href="#">
               <span data-feather="file" class="align-text-bottom"></span>
-              Orders
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              <span data-feather="shopping-cart" class="align-text-bottom"></span>
-              Products
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              <span data-feather="users" class="align-text-bottom"></span>
               Customers
             </a>
           </li>
@@ -145,10 +147,11 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">
-              <span data-feather="layers" class="align-text-bottom"></span>
+              <span data-feather="shopping-cart" class="align-text-bottom"></span>
               Integrations
             </a>
           </li>
+          */ ?>
         </ul>
 
         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
