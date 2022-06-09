@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\Concerns\ImpersonatesUsers;
 
+use App\Models\User;
 use App\Models\Empresa;
 
 class CompaniesModuleTest extends TestCase
@@ -65,15 +66,19 @@ class CompaniesModuleTest extends TestCase
         $empresa = Empresa::factory()->create();
 
         $response = $this->actingAs($fake_user)
-            ->getJson(route('companies.show', $user))
+            ->getJson(route('companies.show', $empresa))
             ->assertStatus(200)
             ->assertJson([
                 'company'=>$empresa->nombre,
-            ])
+            ]);
+
+        $response = $this->actingAs($fake_user)
+            ->get(route('companies.show', $empresa))
+            ->assertStatus(200)
             ->assertSee($empresa->cedula_juridica)
             ->assertSee($empresa->telefono)
             ->assertSee($empresa->correo)
-            ->assertSee($empresa->direccion);
+            ->assertSee(str_replace("\n", '\n', $empresa->direccion));
     }
 
     /** @test **/
@@ -156,359 +161,160 @@ class CompaniesModuleTest extends TestCase
     }
 
     /** @test **/
-    function the_cedula_field_must_be_numeric()
-    {
-        $fake_user = $this->getFakeUser();
-        $this->actingAs($fake_user)
-            ->from('/usuarios')
-            ->post('/usuarios', [
-                'nombre' => 'a',
-                'cedula' => 'a',
-                'email1' => 'a1@a.a',
-                'email2' => 'a2@a.a',
-                'direccion' => 'a',
-                'empresa_id' => 1,
-                'rol_id' => 1,
-                'password' => '123456',
-            ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['cedula' ], null, 'store');
-
-        $this->assertEquals(0, User::count());
-    }
-
-    /** @test **/
-    function the_emails_must_be_valid()
+    function the_company_email_must_be_valid_on_storing()
     {
         $fake_user = $this->getFakeUser();
         
         $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->post('/usuarios', [
-                'nombre' => 'Duilio',
-                'cedula' => 123456,
-                'email1' => 'corre_no_valido1',
-                'email2' => 'corre_no_valido2',
-                'direccion' => 'Calle Falsa 123',
-                'empresa_id' => 2,
-                'rol_id' => 1,
-                'password' => '123456',
+            ->from(route('companies.index'))
+            ->post(route('companies.store'), [
+                'cedula_juridica'   => 'a',
+                'nombre'            => 'a',
+                'telefono'          => '1',
+                'email'             => 'not_valid_email',
+                'direccion'         => 'a',
             ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1', 'email2'], null, 'store');
+            ->assertRedirect(route('companies.index'))
+            ->assertSessionHasErrors(['email'], null, 'store');
 
-        $this->assertEquals(0, User::count());
+        $this->assertEquals(0, Empresa::count());
     }
 
     /** @test **/
-    function the_emails_must_be_unique()
+    function the_company_email_must_be_unique_on_storing()
     {
         $fake_user = $this->getFakeUser();
         
-        User::factory()->create([
-            'email1' => 'duilio@styde.net',
-            'email2' => 'duilio@hotmail.com',
-        ]);
+        Empresa::factory()->create(['email' => 'company@mail.net']);
         $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->post('/usuarios', [
-                'nombre' => 'Duilio',
-                'cedula' => 123456,
-                'email1' => 'duilio@styde.net',
-                'email2' => 'duilio@hotmail.com',
-                'direccion' => 'Calle Falsa 123',
-                'empresa_id' => 2,
-                'rol_id' => 1,
-                'password' => '123456',
+            ->from(route('companies.index'))
+            ->post(route('companies.store'), [
+                'cedula_juridica'   => 'a',
+                'nombre'            => 'a',
+                'telefono'          => '1',
+                'email'             => 'company@mail.net',
+                'direccion'         => 'a',
             ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1','email2'], null, 'store');
+            ->assertRedirect(route('companies.index'))
+            ->assertSessionHasErrors(['email'], null, 'store');
 
-        $this->assertEquals(1, User::count());
+        $this->assertEquals(1, Empresa::count());
+        $this->assertDatabaseMissing('empresas', ['nombre'=>'a']);
     }
 
     /** @test **/
-    function the_email1_must_be_unique_from_email2_and_viceversa()
+    function it_retrieves_correctly_the_company_editing_info()
     {
         $fake_user = $this->getFakeUser();
-        
-        User::factory()->create(['email1'=>'test1@test.test','email2'=>'test2@test.test']);
+        $empresa = Empresa::factory()->create(['nombre'=>'TestCompany']);
         $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->post('/usuarios', [
-                'nombre' => 'Test',
-                'cedula' => 111111,
-                'email1' => 'test2@test.test',
-                'email2' => 'test1@test.test',
-                'direccion' => 'Test',
-                'empresa_id' => 2,
-                'rol_id' => 1,
-                'password' => '123456',
-            ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1', 'email2'], null, 'store');
-
-        $this->assertEquals(1, User::count());
-    }
-
-    /** @test **/
-    function the_email1_and_email2_fields_must_be_different()
-    {
-        $fake_user = $this->getFakeUser();
-        
-        $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->post('/usuarios', [
-                'nombre' => 'Test',
-                'cedula' => 111111,
-                'email1' => 'test@test.test',
-                'email2' => 'test@test.test',
-                'direccion' => 'Test',
-                'empresa_id' => 2,
-                'rol_id' => 1,
-                'password' => '123456',
-            ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1', 'email2'], null, 'store');
-
-        $this->assertEquals(0, User::count());
-    }
-
-    /** @test **/
-    function it_edits_the_user_details_page()
-    {
-        $fake_user = $this->getFakeUser();
-        
-        $user = User::factory()->create(['nombre'=>'Alan Chávez']);
-        $this->actingAs($fake_user)
-            ->getJson(route('users.edit', ['user'=>$user]))
+            ->getJson(route('companies.edit', ['empresa'=>$empresa]))
             ->assertStatus(200)
-            //->assertViewHas('user')
-            ->assertJson(['nombre'=>'Alan Chávez']);
+            ->assertJson(['nombre'=>'TestCompany']);
     }
 
     /** @test **/
-    function it_updates_an_user()
+    function it_updates_a_company()
     {
         $fake_user = $this->getFakeUser();
         
-        $user = User::factory()->create();
-        $this->actingAs($fake_user)->put(route('users.update', $user), [
-            'nombre' => 'Duilio',
-            'cedula' => 33333,
-            'email1' => 'duilio@gmail.com',
-            'email2' => 'duilio@hotmail.com',
-            'direccion' => 'Test',
-            'empresa_id' => 3,
-            'rol_id' => 2,
-            'password' => '123456',
-        ])->assertRedirect(route('users.index'));
-
-        $this->assertCredentials([
-            'nombre' => 'Duilio',
-            'cedula' => 33333,
-            'email1' => 'duilio@gmail.com',
-            'email2' => 'duilio@hotmail.com',
-            'direccion' => 'Test',
-            'empresa_id' => 3,
-            'rol_id' => 2,
-            'password' => '123456',
+        $empresa = Empresa::factory()->create();
+        $this->actingAs($fake_user)->put(route('companies.update', $empresa), [
+            'cedula_juridica'   => 'a',
+            'nombre'            => 'a',
+            'telefono'          => '1',
+            'email'             => 'a@a.a',
+            'logo'              => 'a',
+            'direccion'         => 'a',
+        ])->assertRedirect(route('companies.index'));
+        $this->assertDatabaseHas('empresas', [
+            'cedula_juridica'   => 'a',
+            'nombre'            => 'a',
+            'telefono'          => '1',
+            'email'             => 'a@a.a',
+            'logo'              => 'a',
+            'direccion'         => 'a',
         ]);
     }
 
     /** @test **/
-    function validate_all_required_fields_when_updating_an_user()
+    function validate_all_required_fields_when_updating_a_company()
     {
         $fake_user = $this->getFakeUser();
         
-        $user = User::factory()->create();
-        $nombre = $user->nombre;
+        $empresa = Empresa::factory()->create();
+        $nombre = $empresa->nombre;
         $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->put(route('users.update', $user), [
-                'nombre' => '',
-                'cedula' => '',
-                'email1' => '',
-                'email2' => '',
-                'direccion' => '',
-                'empresa_id' => '',
-                'rol_id' => '',
+            ->from(route('companies.index'))
+            ->put(route('companies.update', $empresa), [
+                'cedula_juridica'   => '',
+                'nombre'            => '',
+                'telefono'          => '',
+                'email'             => '',
+                'direccion'         => '',
             ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['nombre','cedula','email1','email2','direccion','empresa_id','rol_id'], null, 'update');
+            ->assertRedirect(route('companies.index'))
+            ->assertSessionHasErrors(['cedula_juridica','nombre','telefono','email','direccion'], null, 'update');
 
-        $this->assertDatabaseHas('users', ['nombre' => $nombre]);
+        $this->assertDatabaseHas('empresas', ['nombre' => $nombre]);
     }
 
     /** @test **/
-    function the_cedula_field_must_be_numeric_when_updating_an_user()
-    {
-        $fake_user = $this->getFakeUser();
-
-        $user = User::factory()->create();
-        $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->put(route('users.update', $user), [
-                'nombre' => 'a',
-                'cedula' => 'a',
-                'email1' => 'a1@a.a',
-                'email2' => 'a2@a.a',
-                'direccion' => 'a',
-                'empresa_id' => 1,
-                'rol_id' => 1,
-                'password' => '123456',
-            ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['cedula' ], null, 'update');
-
-        $this->assertDatabaseMissing('users', ['nombre'=>'a']);
-    }
-
-    /** @test **/
-    function the_emails_must_be_valid_when_updating_an_user()
+    function the_email_must_be_valid_when_updating_a_company()
     {
         $fake_user = $this->getFakeUser();
         
-        $user = User::factory()->create();
+        $empresa = Empresa::factory()->create();
         $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->put(route('users.update', $user), [
-                'nombre' => 'a',
-                'cedula' => 123,
-                'email1' => 'a',
-                'email2' => 'a',
-                'direccion' => 'a',
-                'empresa_id' => 1,
-                'rol_id' => 1,
-                'password' => '123456',
+            ->from(route('companies.index'))
+            ->put(route('companies.update', $empresa), [
+                'cedula_juridica'   => 'a',
+                'nombre'            => 'a',
+                'telefono'          => '1',
+                'email'             => 'non_valid_email',
+                'direccion'         => 'a',
             ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1', 'email2'], null, 'update');
+            ->assertRedirect(route('companies.index'))
+            ->assertSessionHasErrors(['email'], null, 'update');
 
-        $this->assertDatabaseMissing('users', ['nombre'=>'a']);
+        $this->assertDatabaseMissing('empresas', ['nombre'=>'a']);
     }
 
     /** @test **/
-    function the_emails_must_be_unique_when_updating_an_user()
+    function the_email_must_be_unique_when_updating_a_company()
     {
         $fake_user = $this->getFakeUser();
         
-        User::factory()->create([
-            'email1' => 'test@gmail.com',
-            'email2' => 'test@hotmail.com',
+        Empresa::factory()->create(['email' => 'test@mail.com']);
+        $empresa = Empresa::factory()->create();
+        $this->actingAs($fake_user)
+            ->from(route('companies.index'))
+            ->put(route('companies.update', $empresa), [
+                'cedula_juridica'   => 'a',
+                'nombre'            => 'a',
+                'telefono'          => '1',
+                'email'             => 'test@mail.com',
+                'direccion'         => 'a',
+            ])
+            ->assertRedirect(route('companies.index'))
+            ->assertSessionHasErrors(['email'], null, 'update');
+
+        $this->assertDatabaseMissing('empresas', ['nombre'=>'a']);
+    }
+
+    /** @test **/
+    function it_deletes_a_company()
+    {
+        $fake_user = $this->getFakeUser();
+        
+        $empresa = Empresa::factory()->create();
+
+        $this->actingAs($fake_user)
+            ->delete(route('companies.delete', $empresa))
+            ->assertRedirect(route('companies.index'));
+        $this->assertSame(0, Empresa::count());
+        $this->assertDatabaseMissing('empresas', [
+            'id' => $empresa->id,
         ]);
-        $user = User::factory()->create();
-        $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->put(route('users.update', $user), [
-                'nombre' => 'a',
-                'cedula' => 123,
-                'email1' => 'test@gmail.com',
-                'email2' => 'test@hotmail.com',
-                'direccion' => 'a',
-                'empresa_id' => 1,
-                'rol_id' => 1,
-                'password' => '123456',
-            ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1','email2'], null, 'update');
-
-        $this->assertDatabaseMissing('users', ['nombre'=>'a']);
-    }
-
-    /** @test **/
-    function the_email1_must_be_unique_from_email2_and_viceversa_when_updating()
-    {
-        $fake_user = $this->getFakeUser();
-        
-        User::factory()->create(['email1' => 'test1@test.test', 'email2' => 'test2@test.test']);
-        $user = User::factory()->create();
-        $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->put(route('users.update', $user), [
-                'nombre' => 'Test',
-                'cedula' => 111111,
-                'email1' => 'test2@test.test',
-                'email2' => 'test1@test.test',
-                'direccion' => 'Test',
-                'empresa_id' => 2,
-                'rol_id' => 1,
-                'password' => '123456',
-            ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1', 'email2'], null, 'update');
-
-        $this->assertDatabaseMissing('users', ['nombre'=>'Test']);
-    }
-
-    /** @test **/
-    function user_can_swap_email1_and_email2_when_updating()
-    {
-        $fake_user = $this->getFakeUser();
-        
-        $user = User::factory()->create(['email1' => 'test1@test.test', 'email2' => 'test2@test.test']);
-        $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->put(route('users.update', $user), [
-                'nombre' => 'Test',
-                'cedula' => 111111,
-                'email1' => 'test2@test.test',
-                'email2' => 'test1@test.test',
-                'direccion' => 'Test',
-                'empresa_id' => 2,
-                'rol_id' => 1,
-                'password' => '123456',
-            ])
-            ->assertRedirect(route('users.index'));
-        $this->assertCredentials([
-            'nombre' => 'Test',
-            'cedula' => 111111,
-            'email1' => 'test2@test.test',
-            'email2' => 'test1@test.test',
-            'direccion' => 'Test',
-            'empresa_id' => 2,
-            'rol_id' => 1,
-            'password' => '123456',
-        ]);
-    }
-
-    /** @test **/
-    function the_email1_and_email2_fields_must_be_different_when_updating()
-    {
-        $fake_user = $this->getFakeUser();
-        
-        $user = User::factory()->create();
-        $this->actingAs($fake_user)
-            ->from(route('users.index'))
-            ->put(route('users.update', $user), [
-                'nombre' => 'Test',
-                'cedula' => 111111,
-                'email1' => 'test@test.test',
-                'email2' => 'test@test.test',
-                'direccion' => 'Test',
-                'empresa_id' => 2,
-                'rol_id' => 1,
-                'password' => '123456',
-            ])
-            ->assertRedirect(route('users.index'))
-            ->assertSessionHasErrors(['email1', 'email2'], null, 'update');
-
-        $this->assertDatabaseMissing('users', ['nombre'=>'Test']);
-    }
-
-    /** @test **/
-    function it_deletes_a_user()
-    {
-        $fake_user = $this->getFakeUser();
-        
-        $user = User::factory()->create();
-
-        $this->actingAs($fake_user)
-            ->delete(route('users.delete', ['user'=>$user]))
-            ->assertRedirect(route('users.index'));
-        $this->assertSame(0, User::count());
-        $this->assertDatabaseMissing('users', [
-                'id' => $user->id,
-            ]);
     }
 }
