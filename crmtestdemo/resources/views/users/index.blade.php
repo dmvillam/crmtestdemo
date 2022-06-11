@@ -79,7 +79,7 @@
         <input type="hidden" name="delete_user" id="delete_user" value="">
       </form>
 
-      <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div id="liveToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
           <div class="d-flex">
             <div class="toast-body">
@@ -191,14 +191,14 @@
 
     function actionDeleteUser (e) {
       e.preventDefault()
-      var user = $(this).closest('tr').data('user-id')
+      var user_id = $(this).closest('tr').data('user-id')
       $.ajax({
-        url: "{{ route('users.show', ':user') }}".replace(':user', user),
+        url: "{{ route('users.show', ':user') }}".replace(':user', user_id),
         type: 'GET',
         dataType: 'json',
         success: function(user) {
-          $('#delete_user').val(user.id)
-          var action = '{{ route('users.delete', ':user') }}'.replace(':user', user.id)
+          $('#delete_user').val(user_id)
+          var action = '{{ route('users.delete', ':user') }}'.replace(':user', user_id)
           $('#form-eliminar-usuario').attr('action', action)
           $('#modal-user-delete .modal-title').html(`Eliminar usuario: <strong>${user.nombre}</strong>`)
           $('#modal-user-delete .modal-body').html(`Está por eliminar de manera irreversible al usuario <em>"${user.nombre}"</em> junto con todos sus datos, ¿Desea continuar?`)
