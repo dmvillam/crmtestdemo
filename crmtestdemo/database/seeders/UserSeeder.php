@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
             'email2' => 'my_page@hotmail.com',
             'direccion' => 'Calle Falsa 123',
             'empresa_id' => 1,
-            'password' => bcrypt('my_page'),
+            'password' => bcrypt('admin'),
             'rol_id' => 1,
         ]);
 

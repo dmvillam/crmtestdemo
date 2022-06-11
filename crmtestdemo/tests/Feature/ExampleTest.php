@@ -13,7 +13,7 @@ class ExampleTest extends TestCase
      *
      * @return void
      */
-    public function test_the_application_returns_a_successful_response()
+    public function test_example()
     {
         $fake_user = new User([
             'id' => 1,
@@ -26,6 +26,7 @@ class ExampleTest extends TestCase
             'rol_id' => 1,
         ]);
         $response = $this->actingAs($fake_user)->get('/');
+
         $response->assertStatus(200);
     }
 }
