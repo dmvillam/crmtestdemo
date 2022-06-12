@@ -74,8 +74,8 @@ class UserController extends Controller
         $data = $validator->validated();
         
         $data['password'] = bcrypt($data['password']);
-        User::create($data);
-        return redirect()->route('users.index')->with('status', '¡Usuario creado de manera exitosa!');
+        $user = User::create($data);
+        return redirect()->route('users.index')->with('status', "¡Usuario *{$user->nombre}* creado de manera exitosa!");
     }
 
     public function update(User $user)
@@ -114,12 +114,12 @@ class UserController extends Controller
         } else unset($data['password']);
         $user->update($data);
 
-        return redirect()->route('users.index')->with('status', '¡Usuario actualizado de manera exitosa!');
+        return redirect()->route('users.index')->with('status', "¡Usuario *{$user->nombre}* actualizado de manera exitosa!");
     }
 
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('users.index')->with('status', '¡Usuario borrado de manera exitosa!');
+        return redirect()->route('users.index')->with('status', "¡Usuario *{$user->nombre}* eliminado de manera exitosa!");
     }
 }

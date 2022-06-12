@@ -220,7 +220,7 @@
 @if (session('status'))
     const toastLiveExample = document.getElementById('liveToast')
     const toast = new bootstrap.Toast(toastLiveExample)
-    $('#liveToast .toast-body').text(`{{ session('status') }}`)
+    $('#liveToast .toast-body').html(`{{ session('status') }}`.replace(/\*(.*?)\*/g, '<em>$1</em>'))
     toast.show()
 @endif
 

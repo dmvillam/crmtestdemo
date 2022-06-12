@@ -58,8 +58,8 @@ class EmpresaController extends Controller
 
         $data = $validator->validated();
         
-        Empresa::create($data);
-        return redirect()->route('companies.index')->with('status', '¡Empresa creada de manera exitosa!');
+        $empresa = Empresa::create($data);
+        return redirect()->route('companies.index')->with('status', "¡Empresa *{$empresa->nombre}* creada de manera exitosa!");
     }
 
     public function update(Empresa $empresa)
@@ -81,12 +81,12 @@ class EmpresaController extends Controller
 
         $data = $validator->validated();
         $empresa->update($data);
-        return redirect()->route('companies.index')->with('status', '¡Empresa actualizada de manera exitosa!');
+        return redirect()->route('companies.index')->with('status', "¡Empresa *{$empresa->nombre}* actualizada de manera exitosa!");
     }
 
     public function destroy(Empresa $empresa)
     {
         $empresa->delete();
-        return redirect()->route('companies.index')->with('status', '¡Empresa borrada de manera exitosa!');
+        return redirect()->route('companies.index')->with('status', "¡Empresa *{$empresa->nombre}* eliminada de manera exitosa!");
     }
 }
