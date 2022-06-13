@@ -14,6 +14,9 @@
     display: block;
     margin: -15px 0 5px 0;
   }
+  .company-logo>img {
+    max-width: 100%;
+  }
 </style>
 @endsection
 
@@ -109,9 +112,9 @@
       ],
       dom: 'lfrtBip',
       "drawCallback": function( settings ) {
-        $('.btn-visualizar').on('click', actionViewCompany)
-        $('.btn-modificar').on('click', actionEditCompany)
-        $('.btn-eliminar').on('click', actionDeleteCompany)
+        $('.btn-visualizar').unbind().on('click', actionViewCompany)
+        $('.btn-modificar').unbind().on('click', actionEditCompany)
+        $('.btn-eliminar').unbind().on('click', actionDeleteCompany)
       }
     })
 
@@ -156,7 +159,8 @@
         dataType: 'json',
         success: function(company) {
           $.each( company , function(key, value) {
-            $(`#edit_${key}`).val(value)
+            if (key!='logo')
+              $(`#edit_${key}`).val(value)
           })
           $('#modal-editar-empresa .modal-title').html(`Editar detalles de usuario: ${company.nombre}`)
           var myModal = new bootstrap.Modal(document.getElementById('modal-editar-empresa'))

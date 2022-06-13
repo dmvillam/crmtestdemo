@@ -9,7 +9,7 @@
         @if ($errors->update->any())
         <h6 class="alert alert-danger">Se han producido los siguientes errores:</h6>
         @endif
-        <form id="form-editar-empresa" action="" method="POST">
+        <form id="form-editar-empresa" action="" method="POST" enctype="multipart/form-data">
           {{ csrf_field() }}
           <input type="hidden" name="_method" value="PUT"/>
           <input type="hidden" name="id" id="edit_id" value="{{old('id')}}">
@@ -38,6 +38,10 @@
             <input type="text" class="form-control @error('direccion', 'update') is-invalid @enderror" id="edit_direccion" name="direccion" placeholder="Dirección" value="{{ old('direccion') }}">
           </div>
           @error('direccion', 'update')<div class="invalid-feedback">{{ $message }}</div>@enderror
+          <div class="mb-3">
+            <label for="logo" class="col-form-label">Cambiar Logo</label>
+            <input type="file" class="form-control" name="logo" id="edit_logo">
+          </div>
         </form>
       </div>
       <div class="modal-footer">

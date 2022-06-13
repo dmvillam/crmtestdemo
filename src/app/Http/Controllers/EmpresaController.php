@@ -39,6 +39,17 @@ class EmpresaController extends Controller
         return response()->json($empresa->toArray());
     }
 
+    private function handleLogo(Empresa $empresa)
+    {
+        if(request()->file('logo')){
+            $file = request()->file('logo');
+            $filename = date('YmdHi').$file->getClientOriginalName();
+            $file->move(public_path('img/logos'), $filename);
+            $empresa['logo'] = $filename;
+            $empresa->save();
+        }
+    }
+
     public function store()
     {
         $validator = Validator::make(request()->all(), [
@@ -59,6 +70,8 @@ class EmpresaController extends Controller
         $data = $validator->validated();
         
         $empresa = Empresa::create($data);
+        $this->handleLogo($empresa);
+
         return redirect()->route('companies.index')->with('status', "¡Empresa *{$empresa->nombre}* creada de manera exitosa!");
     }
 
@@ -81,6 +94,14 @@ class EmpresaController extends Controller
 
         $data = $validator->validated();
         $empresa->update($data);
+
+        // Handle the logo file
+        $logo = public_path('img/logos')."/{$empresa->logo}";
+        if ($empresa->logo && file_exists($logo)) {
+            unlink($logo);
+        }
+        $this->handleLogo($empresa);
+
         return redirect()->route('companies.index')->with('status', "¡Empresa *{$empresa->nombre}* actualizada de manera exitosa!");
     }
 

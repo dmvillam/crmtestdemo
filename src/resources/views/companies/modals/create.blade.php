@@ -9,7 +9,7 @@
       	@if ($errors->store->any())
       	<h6 class="alert alert-danger">Se han producido los siguientes errores:</h6>
       	@endif
-        <form id="form-crear-empresa" action="{{ route('companies.store') }}" method="POST">
+        <form id="form-crear-empresa" action="{{ route('companies.store') }}" method="POST" enctype="multipart/form-data">
           {{ csrf_field() }}
           <div class="mb-3">
             <label for="cedula_juridica" class="col-form-label">Cédula jurídica <span class="text-danger">*</span></label>
@@ -36,6 +36,10 @@
             <input type="text" class="form-control @error('direccion', 'store') is-invalid @enderror" id="direccion" name="direccion" placeholder="Dirección" value="{{ old('direccion') }}">
           </div>
           @error('direccion', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
+          <div class="mb-3">
+            <label for="logo" class="col-form-label">Subir Logo</label>
+            <input type="file" class="form-control" name="logo" id="logo">
+          </div>
         </form>
       </div>
       <div class="modal-footer">
