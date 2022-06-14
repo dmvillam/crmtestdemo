@@ -3,7 +3,7 @@
 	@if (preg_match("/^https?\:\/\//", $empresa->logo))
 	<img src="{{$empresa->logo}}" alt="Logo de {{$empresa->nombre}}" title="Logo de {{$empresa->nombre}}">
 	@else
-	<img src="{{ asset('img/logos') . '/' . $empresa->logo }}" alt="Logo de {{$empresa->nombre}}" title="Logo de {{$empresa->nombre}}">
+	<img src="{{ asset('storage/logos/'.$empresa->logo) }}" alt="Logo de {{$empresa->nombre}}" title="Logo de {{$empresa->nombre}}">
 	@endif
 </div>
 @else

@@ -15,7 +15,7 @@ class Empresa extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'cedula_juridica', 'nombre', 'telefono', 'email', 'logo', 'direccion'
+        'cedula_juridica', 'nombre', 'telefono', 'email', 'direccion'
     ];
 
     /*

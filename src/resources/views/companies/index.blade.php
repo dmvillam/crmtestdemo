@@ -207,6 +207,12 @@
     toast.show()
 @endif
 
+@if (session('debug'))
+    /* DEBUG:
+    {{session('debug')}}
+    */
+@endif
+
   })
 </script>
 @endsection

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Image;
 
 use App\Models\Empresa;
 
@@ -39,13 +40,44 @@ class EmpresaController extends Controller
         return response()->json($empresa->toArray());
     }
 
-    private function handleLogo(Empresa $empresa)
+    private function handleLogo(Empresa $empresa, $action='store')
     {
-        if(request()->file('logo')){
-            $file = request()->file('logo');
-            $filename = date('YmdHi').$file->getClientOriginalName();
-            $file->move(public_path('img/logos'), $filename);
-            $empresa['logo'] = $filename;
+        if(request()->file('logo'))
+        {
+            if ($action=='update') {
+                if (file_exists(storage_path('app/public/logos/'.$empresa->logo)))
+                    unlink(storage_path('app/public/logos/'.$empresa->logo));
+            }
+
+            $path = request()->file('logo')->store('/', 'logos');
+            $empresa['logo'] = $path;
+            $empresa->save();
+        }
+    }
+
+    private function _handleLogo(Empresa $empresa, $action='store')
+    {
+        if (request()->file('logo'))
+        {
+            if ($action=='update') {
+                if (file_exists(storage_path('app/public/logos/'.$empresa->logo)))
+                    unlink(storage_path('app/public/logos/'.$empresa->logo));
+            }
+
+            $logo = request()->file('logo');
+            $logoname = $logo->hashName();
+         
+            $path = storage_path('app/public/logos');
+            $img = Image::make($logo->path());
+            if ($img->width() > 500 || $img->height() > 500) {
+                $img->resize(500, 500, function ($const) {
+                    $const->aspectRatio();
+                });
+            }
+
+            \Storage::disk('logos')->put($logo->hashName(), (string) $img->encode());
+
+            $empresa['logo'] = $logoname;
             $empresa->save();
         }
     }
@@ -57,7 +89,7 @@ class EmpresaController extends Controller
             'nombre'            => 'required',
             'telefono'          => 'required',
             'email'             => 'required|email|unique:empresas,email',
-            'logo'              => '',
+            'logo'              => 'image|mimes:jpg,jpeg,png,svg,gif|max:2048',
             'direccion'         => 'required',
         ]);
 
@@ -82,7 +114,7 @@ class EmpresaController extends Controller
             'nombre'            => 'required',
             'telefono'          => 'required',
             'email'             => ['required', 'email', Rule::unique('empresas', 'email')->ignore($empresa)],
-            'logo'              => '',
+            'logo'              => 'image|mimes:jpg,jpeg,png,svg,gif|max:2048',
             'direccion'         => 'required',
         ]);
 
@@ -94,13 +126,8 @@ class EmpresaController extends Controller
 
         $data = $validator->validated();
         $empresa->update($data);
+        $this->handleLogo($empresa, 'update');
 
-        // Handle the logo file
-        $logo = public_path('img/logos')."/{$empresa->logo}";
-        if ($empresa->logo && file_exists($logo)) {
-            unlink($logo);
-        }
-        $this->handleLogo($empresa);
 
         return redirect()->route('companies.index')->with('status', "¡Empresa *{$empresa->nombre}* actualizada de manera exitosa!");
     }
