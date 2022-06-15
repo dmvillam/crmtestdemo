@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Image;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\Empresa;
 
@@ -40,13 +41,13 @@ class EmpresaController extends Controller
         return response()->json($empresa->toArray());
     }
 
-    private function handleLogo(Empresa $empresa, $action='store')
+    private function _handleLogo(Empresa $empresa, $action='store')
     {
         if(request()->file('logo'))
         {
             if ($action=='update') {
-                if (file_exists(storage_path('app/public/logos/'.$empresa->logo)))
-                    unlink(storage_path('app/public/logos/'.$empresa->logo));
+                if (Storage::disk('logos')->exists($empresa->logo))
+                    Storage::disk('logos')->delete($empresa->logo);
             }
 
             $path = request()->file('logo')->store('/', 'logos');
@@ -55,13 +56,13 @@ class EmpresaController extends Controller
         }
     }
 
-    private function _handleLogo(Empresa $empresa, $action='store')
+    private function handleLogo(Empresa $empresa, $action='store')
     {
         if (request()->file('logo'))
         {
             if ($action=='update') {
-                if (file_exists(storage_path('app/public/logos/'.$empresa->logo)))
-                    unlink(storage_path('app/public/logos/'.$empresa->logo));
+                if (Storage::disk('logos')->exists($empresa->logo))
+                    Storage::disk('logos')->delete($empresa->logo);
             }
 
             $logo = request()->file('logo');
@@ -75,7 +76,7 @@ class EmpresaController extends Controller
                 });
             }
 
-            \Storage::disk('logos')->put($logo->hashName(), (string) $img->encode());
+            Storage::disk('logos')->put($logoname, (string) $img->encode());
 
             $empresa['logo'] = $logoname;
             $empresa->save();
@@ -135,6 +136,10 @@ class EmpresaController extends Controller
     public function destroy(Empresa $empresa)
     {
         $empresa->delete();
+
+        if (Storage::disk('logos')->exists($empresa->logo))
+            Storage::disk('logos')->delete($empresa->logo);
+        
         return redirect()->route('companies.index')->with('status', "¡Empresa *{$empresa->nombre}* eliminada de manera exitosa!");
     }
 }

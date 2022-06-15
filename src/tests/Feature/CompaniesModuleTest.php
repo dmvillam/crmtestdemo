@@ -202,10 +202,11 @@ class CompaniesModuleTest extends TestCase
         $this->assertDatabaseMissing('empresas', ['nombre'=>'a']);
     }
 
+    /** @test **/
     public function logos_can_be_uploaded()
     {
         $fake_user = $this->getFakeUser();
-        Storage::fake('public');
+        Storage::fake('logos');
  
         $file = UploadedFile::fake()->image('logo.jpg');
  
@@ -217,10 +218,61 @@ class CompaniesModuleTest extends TestCase
                 'email'             => 'a@a.a',
                 'direccion'         => 'a',
                 'logo'              => $file,
-            ]);
+            ])
+            ->assertRedirect(route('companies.index'));
+
+        $this->assertDatabaseHas('empresas', ['nombre' => 'a', 'logo' => $file->hashName()]);
+        Storage::disk('logos')->assertExists($file->hashName());
+    }
+
+    /** @test **/
+    public function logo_must_be_an_image()
+    {
+        $fake_user = $this->getFakeUser();
+        Storage::fake('logos');
  
-        $this->assertDatabaseHas('empresas', ['nombre' => 'a', 'logo' => $file]);
-        Storage::disk('public')->assertExists($file->hashName());
+        $file = UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
+ 
+        $this->actingAs($fake_user)
+            ->post(route('companies.store'), [
+                'cedula_juridica'   => 'a',
+                'nombre'            => 'a',
+                'telefono'          => '1',
+                'email'             => 'a@a.a',
+                'direccion'         => 'a',
+                'logo'              => $file,
+            ])
+            ->assertRedirect(route('companies.index'))
+            ->assertSessionHasErrors(['logo'], null, 'store');
+
+        $this->assertEquals(0, Empresa::count());
+        $this->assertDatabaseMissing('empresas', ['nombre'=>'a', 'logo' => $file->hashName()]);
+        Storage::disk('logos')->assertMissing($file->hashName());
+    }
+
+    /** @test **/
+    public function logo_cant_be_long_in_size()
+    {
+        $fake_user = $this->getFakeUser();
+        Storage::fake('logos');
+ 
+        $file = UploadedFile::fake()->image('logo.jpg')->size(3000);
+ 
+        $this->actingAs($fake_user)
+            ->post(route('companies.store'), [
+                'cedula_juridica'   => 'a',
+                'nombre'            => 'a',
+                'telefono'          => '1',
+                'email'             => 'a@a.a',
+                'direccion'         => 'a',
+                'logo'              => $file,
+            ])
+            ->assertRedirect(route('companies.index'))
+            ->assertSessionHasErrors(['logo'], null, 'store');
+
+        $this->assertEquals(0, Empresa::count());
+        $this->assertDatabaseMissing('empresas', ['nombre'=>'a', 'logo' => $file->hashName()]);
+        Storage::disk('logos')->assertMissing($file->hashName());
     }
 
     /** @test **/
@@ -328,9 +380,9 @@ class CompaniesModuleTest extends TestCase
         $fake_user = $this->getFakeUser();
 
         // Creating the first logo
-        $file1 = UploadedFile::fake()->image('logo1.jpg');
-        $empresa = Empresa::factory()->create(['logo' => 'previous-logo.png']);
-        $file1->move(storage_path('app/public/logos'), 'previous-logo.png');
+        $file1 = UploadedFile::fake()->image('logo.jpg');
+        $file1_name = $file1->store('/', 'logos');
+        $empresa = Empresa::factory()->create(['logo' => $file1_name]);
 
         // Changing the logo
         $file2 = UploadedFile::fake()->image('logo2.jpg');
@@ -343,25 +395,88 @@ class CompaniesModuleTest extends TestCase
                 'email'             => 'a@a.a',
                 'direccion'         => 'a',
                 'logo'              => $file2,
-            ]);
-        $empresa = Empresa::first();
+            ])
+            ->assertRedirect(route('companies.index'));
  
-        $this->assertDatabaseHas('empresas', ['nombre' => 'a']);
-        //Storage::disk('logos')->assertExists(''.$empresa->logo);
-        //Storage::disk('logos')->assertMissing('previous-logo.png');
+        $this->assertDatabaseHas('empresas', ['nombre' => 'a', 'logo' => $file2->hashName()]);
         Storage::disk('logos')->assertExists($file2->hashName());
-        Storage::disk('logos')->assertExists('C9NS1kbBkrs66rlToIKUC5J2czius1UT6gL6pHjY.png');
-        Storage::disk('logos')->assertMissing('C9NS1kbBkrs66rlToIKUC5J2czius1UT6gL6pHjY.png');
-        //$this->assertFileEquals($file2, Storage::disk('public')->path('logos/'.$empresa->logo));
-        $this->assertFileEquals($file2, storage_path('app/public/logos/'.$empresa->logo));
+        Storage::disk('logos')->assertMissing($file1_name);
+        
+        // We can't compare the original uploaded file with the stored file, because stored file has passed through an image conversion process
+        //$this->assertFileEquals($file2, Storage::disk('logos')->path($file2->hashName()));
+    }
+
+    /** @test **/
+    public function logo_must_be_an_image_when_updating_a_company()
+    {
+        $fake_user = $this->getFakeUser();
+        Storage::fake('logos');
+
+        // Creating the first logo
+        $file1 = UploadedFile::fake()->image('logo.jpg');
+        $file1_name = $file1->store('/', 'logos');
+        $empresa = Empresa::factory()->create(['logo' => $file1_name]);
+ 
+        // Changing the logo
+        $file2 = UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
+        $this->actingAs($fake_user)
+            ->from(route('companies.index'))
+            ->put(route('companies.update', $empresa), [
+                'cedula_juridica'   => 'a',
+                'nombre'            => 'a',
+                'telefono'          => '1',
+                'email'             => 'a@a.a',
+                'direccion'         => 'a',
+                'logo'              => $file2,
+            ])
+            ->assertRedirect(route('companies.index'))
+            ->assertSessionHasErrors(['logo'], null, 'update');
+
+        $this->assertDatabaseMissing('empresas', ['nombre'=>'a', 'logo' => $file2->hashName()]);
+        Storage::disk('logos')->assertExists($file1_name);
+        Storage::disk('logos')->assertMissing($file2->hashName());
+    }
+
+    /** @test **/
+    public function logo_cant_be_long_in_size_when_updating_a_company()
+    {
+        $fake_user = $this->getFakeUser();
+        Storage::fake('logos');
+
+        // Creating the first logo
+        $file1 = UploadedFile::fake()->image('logo.jpg');
+        $file1_name = $file1->store('/', 'logos');
+        $empresa = Empresa::factory()->create(['logo' => $file1_name]);
+ 
+        // Changing the logo
+        $file2 = UploadedFile::fake()->image('logo.jpg')->size(3000);
+        $this->actingAs($fake_user)
+            ->from(route('companies.index'))
+            ->put(route('companies.update', $empresa), [
+                'cedula_juridica'   => 'a',
+                'nombre'            => 'a',
+                'telefono'          => '1',
+                'email'             => 'a@a.a',
+                'direccion'         => 'a',
+                'logo'              => $file2,
+            ])
+            ->assertRedirect(route('companies.index'))
+            ->assertSessionHasErrors(['logo'], null, 'update');
+
+        $this->assertDatabaseMissing('empresas', ['nombre'=>'a', 'logo' => $file2->hashName()]);
+        Storage::disk('logos')->assertExists($file1_name);
+        Storage::disk('logos')->assertMissing($file2->hashName());
     }
 
     /** @test **/
     function it_deletes_a_company()
     {
         $fake_user = $this->getFakeUser();
+        Storage::fake('logos');
         
-        $empresa = Empresa::factory()->create();
+        $file = UploadedFile::fake()->image('logo.jpg');
+        $filename = $file->store('/', 'logos');
+        $empresa = Empresa::factory()->create(['logo' => $filename]);
 
         $this->actingAs($fake_user)
             ->delete(route('companies.delete', $empresa))
@@ -370,5 +485,6 @@ class CompaniesModuleTest extends TestCase
         $this->assertDatabaseMissing('empresas', [
             'id' => $empresa->id,
         ]);
+        Storage::disk('logos')->assertMissing($filename);
     }
 }

@@ -38,8 +38,9 @@
           @error('direccion', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
           <div class="mb-3">
             <label for="logo" class="col-form-label">Subir Logo</label>
-            <input type="file" class="form-control" name="logo" id="logo">
+            <input type="file" class="form-control @error('logo', 'store') is-invalid @enderror" name="logo" id="logo">
           </div>
+          @error('logo', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </form>
       </div>
       <div class="modal-footer">

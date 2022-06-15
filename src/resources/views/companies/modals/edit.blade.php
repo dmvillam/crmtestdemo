@@ -40,8 +40,9 @@
           @error('direccion', 'update')<div class="invalid-feedback">{{ $message }}</div>@enderror
           <div class="mb-3">
             <label for="logo" class="col-form-label">Cambiar Logo</label>
-            <input type="file" class="form-control" name="logo" id="edit_logo">
+            <input type="file" class="form-control @error('logo', 'update') is-invalid @enderror" name="logo" id="edit_logo">
           </div>
+          @error('logo', 'update')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </form>
       </div>
       <div class="modal-footer">
