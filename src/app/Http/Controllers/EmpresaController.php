@@ -41,7 +41,7 @@ class EmpresaController extends Controller
         return response()->json($empresa->toArray());
     }
 
-    private function _handleLogo(Empresa $empresa, $action='store')
+    private function _handleLogo_unused_prototype(Empresa $empresa, $action='store')
     {
         if(request()->file('logo'))
         {

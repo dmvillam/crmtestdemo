@@ -14,7 +14,7 @@ use App\Models\Empresa;
 
 class CompaniesModuleTest extends TestCase
 {
-   use RefreshDatabase;
+    use RefreshDatabase;
 
     private function getFakeUser()
     {

@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmpresaController;
-use App\Models\Post;
+use App\Http\Controllers\TaskController;
 
 Auth::routes();
 
@@ -35,3 +35,10 @@ Route::get(     '/empresas/{empresa}',          [EmpresaController::class, 'show
 Route::get(     '/empresas/{empresa}/editar',   [EmpresaController::class, 'edit'])    ->name('companies.edit');
 Route::put(     '/empresas/{empresa}',          [EmpresaController::class, 'update'])  ->name('companies.update');
 Route::delete(  '/empresas/{empresa}',          [EmpresaController::class, 'destroy']) ->name('companies.delete');
+
+Route::get(     '/tareas',                [TaskController::class, 'index'])   ->name('tasks.index');
+Route::post(    '/tareas',                [TaskController::class, 'store'])   ->name('tasks.store');
+Route::get(     '/tareas/{tarea}',         [TaskController::class, 'show'])    ->name('tasks.show');
+Route::get(     '/tareas/{tarea}/editar',  [TaskController::class, 'edit'])    ->name('tasks.edit');
+Route::put(     '/tareas/{tarea}',         [TaskController::class, 'update'])  ->name('tasks.update');
+Route::delete(  '/tareas/{tarea}',         [TaskController::class, 'destroy']) ->name('tasks.delete');

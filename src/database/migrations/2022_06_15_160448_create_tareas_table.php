@@ -15,6 +15,11 @@ class CreateTareasTable extends Migration
     {
         Schema::create('tareas', function (Blueprint $table) {
             $table->id();
+            $table->string('tipo_mantenimiento');
+            $table->string('nombre');
+            $table->unsignedInteger('periodicidad');
+            $table->unsignedInteger('notificacion_id')->nullable();
+            $table->unsignedInteger('user_id');
             $table->timestamps();
         });
     }
