@@ -32,13 +32,38 @@
           </div>
           @error('periodicidad', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
           <div class="mb-3">
-            <label class="col-form-label"><input type="checkbox" id="notificacion" name="notificacion"> Crear notificación</label>
+            <label class="col-form-label noselect">
+              <input type="checkbox" id="notificacion" name="notificacion" @if(old('notificacion')) checked @endif>
+              Crear notificación
+            </label>
           </div>
-          <div>
+          <div class="form-notificacion">
+            <hr>
             <div class="mb-3">
-              <label for="periodicidad" class="col-form-label">Periodicidad (min)<span class="text-danger">*</span></label>
-              <input type="number" class="form-control @error('periodicidad', 'store') is-invalid @enderror" id="periodicidad" name="periodicidad" placeholder="Periodicidad" value="{{ old('periodicidad') }}" min="5" step="5">
+              <label for="notif_nombre" class="col-form-label">Nombre de la Notificación <span class="text-danger">*</span></label>
+              <input type="text" class="form-control @error('notif_nombre', 'store') is-invalid @enderror" id="notif_nombre" name="notif_nombre" placeholder="Nombre" value="{{ old('notif_nombre') }}" required>
             </div>
+            @error('notif_nombre', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <div class="mb-3">
+              <label for="plantilla" class="col-form-label">Plantilla para el correo/sms <span class="text-danger">*</span></label>
+              <select class="form-control @error('plantilla', 'store') is-invalid @enderror" id="plantilla" name="plantilla">
+                <option value="">Elija una plantilla</option>
+                @foreach ($plantillas as $plantilla)
+                  <option value="{{ $plantilla->id }}" {{ (old('plantilla') == $plantilla->nombre ? 'selected':'') }}>{{ $plantilla->nombre }}</option>
+                @endforeach
+              </select>
+            </div>
+            @error('plantilla', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <div class="mb-3">
+              <label for="telefono" class="col-form-label">Teléfono</label>
+              <input type="text" class="form-control @error('telefono', 'store') is-invalid @enderror" id="telefono" name="telefono" placeholder="Teléfono al cual enviar SMS" value="{{ old('telefono') }}">
+            </div>
+            @error('telefono', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <div class="mb-3">
+              <label for="email" class="col-form-label">Correo</label>
+              <input type="email" class="form-control @error('email', 'store') is-invalid @enderror" id="email" name="email" placeholder="Correo al cual notificar" value="{{ old('email') }}">
+            </div>
+            @error('email', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
           </div>
         </form>
       </div>

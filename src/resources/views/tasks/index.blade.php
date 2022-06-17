@@ -14,6 +14,15 @@
     display: block;
     margin: -15px 0 5px 0;
   }
+  .noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Old versions of Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+  }
 </style>
 @endsection
 
@@ -102,18 +111,19 @@
       e.preventDefault()
     })
 
-    $('table').DataTable({
-      responsive: true,
-      buttons: [
-        'copy', 'csv', 'excel', 'pdf', 'print'
-      ],
-      dom: 'lfrtBip',
-      "drawCallback": function( settings ) {
-        $('.btn-visualizar').on('click', actionViewTask)
-        $('.btn-modificar').on('click', actionEditTask)
-        $('.btn-eliminar').on('click', actionDeleteTask)
-      }
-    })
+    if ($('table tbody td').length > 1)
+      $('table').DataTable({
+        responsive: true,
+        buttons: [
+          'copy', 'csv', 'excel', 'pdf', 'print'
+        ],
+        dom: 'lfrtBip',
+        "drawCallback": function( settings ) {
+          $('.btn-visualizar').on('click', actionViewTask)
+          $('.btn-modificar').on('click', actionEditTask)
+          $('.btn-eliminar').on('click', actionDeleteTask)
+        }
+      })
 
     $('.btn-crear-tarea').on('click', function() {
       $('#form-crear-tarea').submit()
@@ -202,6 +212,22 @@
     $('#liveToast .toast-body').html(`{{ session('status') }}`.replace(/\*(.*?)\*/g, '<em>$1</em>'))
     toast.show()
 @endif
+
+    function toggleNotificationForm() {
+      if ($('#notificacion').is(':checked')) {
+        $('.form-notificacion').slideDown()
+        $('.form-notificacion input, .form-notificacion select').prop('disabled', false)
+      } else {
+        $('.form-notificacion').slideUp()
+        $('.form-notificacion input, .form-notificacion select').prop('disabled', true)
+      }
+    }
+    toggleNotificationForm()
+    $('#notificacion').on('change', function () {
+      toggleNotificationForm()
+    })
+
+    console.log('a')
 
   })
 </script>

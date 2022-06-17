@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Tarea;
+use App\Models\Plantilla;
 
 class TaskController extends Controller
 {
@@ -22,7 +23,8 @@ class TaskController extends Controller
     {
         $tareas = Tarea::all();
         $tipos_mantenimiento = ['P1', 'P2', 'P3', 'P4', 'P5'];
-        return view('tasks.index', compact('tareas', 'tipos_mantenimiento'));
+        $plantillas = Plantilla::all();
+        return view('tasks.index', compact('tareas', 'tipos_mantenimiento', 'plantillas'));
     }
 
     public function show(Tarea $tarea)

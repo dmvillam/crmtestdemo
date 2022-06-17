@@ -131,18 +131,18 @@
               Empresas
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link @if (Route::currentRouteName()=='tasks.index') active @endif" href="{{route('tasks.index')}}">
+              <span data-feather="bar-chart-2" class="align-text-bottom"></span>
+              Tareas
+            </a>
+          </li>
 
           <?php /*
           <li class="nav-item">
             <a class="nav-link" href="#">
               <span data-feather="file" class="align-text-bottom"></span>
               Customers
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              <span data-feather="bar-chart-2" class="align-text-bottom"></span>
-              Reports
             </a>
           </li>
           <li class="nav-item">
