@@ -44,7 +44,7 @@ class CompaniesModuleTest extends TestCase
         $response = $this->actingAs($fake_user)
             ->get(route('companies.index'))
             ->assertStatus(200)
-            ->assertViewIs(route('users.index'))
+            ->assertViewIs(route('companies.index'))
             ->assertViewHas('empresas')
             ->assertSee('Empresas')
             ->assertSee('Company 1')
