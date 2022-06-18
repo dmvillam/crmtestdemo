@@ -10,7 +10,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger btn-eliminar-usuario">Eliminar</button>
+        <button type="button" class="btn btn-danger btn-eliminar-tarea">Eliminar</button>
       </div>
     </div>
   </div>

@@ -26,12 +26,21 @@ class TasksTestModule extends TestCase
             'rol_id' => 1,
         ]);
     }
-    
-    /** @test **/
-    public function test_example()
-    {
-        $response = $this->get('/');
 
-        $response->assertStatus(200);
+    /** @test **/
+    function it_shows_the_tasks_list_page()
+    {
+        $fake_user = $this->getFakeUser();
+        Empresa::factory()->create(['nombre' => 'Company 1']);
+        Empresa::factory()->create(['nombre' => 'Company 2']);
+
+        $response = $this->actingAs($fake_user)
+            ->get(route('companies.index'))
+            ->assertStatus(200)
+            ->assertViewIs(route('users.index'))
+            ->assertViewHas('empresas')
+            ->assertSee('Empresas')
+            ->assertSee('Company 1')
+            ->assertSee('Company 2');
     }
 }

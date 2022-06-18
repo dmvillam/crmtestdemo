@@ -23,7 +23,7 @@ class Tarea extends Model
      */
     public function cliente()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     public function notificacion()

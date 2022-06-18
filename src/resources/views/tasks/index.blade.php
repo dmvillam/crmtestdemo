@@ -65,9 +65,9 @@
               <td>{{ $tarea->nombre }}</td>
               <td>{{ $tarea->cliente->nombre }}</td>
               <td>{{ $tarea->periodicidad }}</td>
-              <td>{{ $tarea->notificacion ? $tarea->notificacion->nombre : "" }}</td>
-              <td>{{ $tarea->notificacion ? $tarea->notificacion->notificar_email : "" }}</td>
-              <td>{{ $tarea->notificacion ? $tarea->notificacion->notificar_sms : "" }}</td>
+              <td>{{ $tarea->notificacion ? "Si" : "No" }}</td>
+              <td>{{ $tarea->notificacion ? ($tarea->notificacion->notificar_sms?"Si":"No") : "No" }}</td>
+              <td>{{ $tarea->notificacion ? ($tarea->notificacion->notificar_email?"Si":"No") : "No" }}</td>
               <td>?</td>
               <td>
                 <a href="#" class="link-secondary btn-visualizar" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" title="Visualizar"><i class="fa-solid fa-eye"></i></a>
@@ -113,7 +113,11 @@
 
     if ($('table tbody td').length > 1)
       $('table').DataTable({
-        responsive: true,
+        responsive: {
+            details: {
+                renderer: $.fn.dataTable.Responsive.renderer.listHiddenNodes()
+            }
+        },
         buttons: [
           'copy', 'csv', 'excel', 'pdf', 'print'
         ],
@@ -139,7 +143,9 @@
 
     function actionViewTask (e) {
       e.preventDefault()
-      var tarea = $(this).closest('tr').data('tarea-id')
+      var tarea = $(this).closest('tr').hasClass('child') ?
+        $(this).closest('tr').prev().data('tarea-id') :
+        $(this).closest('tr').data('tarea-id')
       $.ajax({
         url: "{{ route('tasks.show', ':tarea') }}".replace(':tarea', tarea),
         type: 'GET',
@@ -159,17 +165,23 @@
 
     function actionEditTask (e) {
       e.preventDefault()
-      var tarea = $(this).closest('tr').data('tarea-id')
+      var tarea = $(this).closest('tr').hasClass('child') ?
+        $(this).closest('tr').prev().data('tarea-id') :
+        $(this).closest('tr').data('tarea-id')
       $.ajax({
         url: "{{ route('tasks.edit', ':tarea') }}".replace(':tarea', tarea),
         type: 'GET',
         dataType: 'json',
         success: function(tarea) {
           $.each( tarea , function(key, value) {
-            $(`#edit_${key}`).val(value)
+            if ($(`#edit_${key}`).attr('type') == 'checkbox') {
+              $(`#edit_${key}`).prop('checked', value ? true : false)
+            } else $(`#edit_${key}`).val(value)
           })
-          $('#modal-editar-tarea .modal-title').html(`Editar detalles de usuario: ${tarea.nombre}`)
+          $('#modal-editar-tarea .modal-title').html(`Editar tarea: ${tarea.nombre}`)
           var myModal = new bootstrap.Modal(document.getElementById('modal-editar-tarea'))
+          if ($('#edit_notificacion').is(':checked'))
+            toggleNotificationForm()
           myModal.show()
         },
         error: function(xhr, status) {
@@ -188,15 +200,17 @@
 
     function actionDeleteTask (e) {
       e.preventDefault()
-      var task_id = $(this).closest('tr').data('tarea-id')
-      var task_name = $(this).closest('tr').find('td:nth-child(2)').text()
-      var action = '{{ route('tasks.delete', ':tarea') }}'.replace(':tarea', task_id)
+      var tarea_id = $(this).closest('tr').hasClass('child') ?
+        $(this).closest('tr').prev().data('tarea-id') :
+        $(this).closest('tr').data('tarea-id')
+      var tarea_nombre = $(this).closest('tr').find('td:nth-child(2)').text()
+      var action = '{{ route('tasks.delete', ':tarea') }}'.replace(':tarea', tarea_id)
       var myModal = new bootstrap.Modal(document.getElementById('modal-eliminar-tarea'))
       
-      $('#delete_company').val(task_id)
+      $('#delete_task').val(tarea_id)
       $('#form-eliminar-tarea').attr('action', action)
-      $('#modal-eliminar-tarea .modal-title').html(`Eliminar usuario: <strong>${task_name}</strong>`)
-      $('#modal-eliminar-tarea .modal-body').html(`Está por eliminar de manera irreversible al usuario <em>"${task_name}"</em> junto con todos sus datos, ¿Desea continuar?`)
+      $('#modal-eliminar-tarea .modal-title').html(`Eliminar tarea: <strong>${tarea_nombre}</strong>`)
+      $('#modal-eliminar-tarea .modal-body').html(`Está por eliminar de manera irreversible la tarea <em>"${tarea_nombre}"</em> junto con todos sus datos, ¿Desea continuar?`)
       
       myModal.show()
     }
@@ -206,15 +220,8 @@
       $('#form-eliminar-tarea').submit()
     })
 
-@if (session('status'))
-    const toastLiveExample = document.getElementById('liveToast')
-    const toast = new bootstrap.Toast(toastLiveExample)
-    $('#liveToast .toast-body').html(`{{ session('status') }}`.replace(/\*(.*?)\*/g, '<em>$1</em>'))
-    toast.show()
-@endif
-
     function toggleNotificationForm() {
-      if ($('#notificacion').is(':checked')) {
+      if ($('#notificacion,#edit_notificacion').is(':checked')) {
         $('.form-notificacion').slideDown()
         $('.form-notificacion input, .form-notificacion select').prop('disabled', false)
       } else {
@@ -223,11 +230,30 @@
       }
     }
     toggleNotificationForm()
-    $('#notificacion').on('change', function () {
+    $('#notificacion,#edit_notificacion').on('change', function () {
       toggleNotificationForm()
     })
 
-    console.log('a')
+    $('#notificar_sms,#notificar_email').on('change', function() {
+      if ($(this).is(':checked')) {
+        $(this).closest('label').append(' <span class="text-danger">*</span>')
+      } else {
+        $(this).closest('label').find('span').remove()
+      }
+    })
+
+    if ($('#notificar_sms').is(':checked'))
+      $('#notificar_sms').closest('label').append(' <span class="text-danger">*</span>')
+
+    if ($('#notificar_email').is(':checked'))
+      $('#notificar_email').closest('label').append(' <span class="text-danger">*</span>')
+
+@if (session('status'))
+    const toastLiveExample = document.getElementById('liveToast')
+    const toast = new bootstrap.Toast(toastLiveExample)
+    $('#liveToast .toast-body').html(`{{ session('status') }}`.replace(/\*(.*?)\*/g, '<em>$1</em>'))
+    toast.show()
+@endif
 
   })
 </script>
