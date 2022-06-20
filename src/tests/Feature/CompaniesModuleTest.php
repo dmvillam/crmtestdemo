@@ -482,9 +482,6 @@ class CompaniesModuleTest extends TestCase
             ->delete(route('companies.delete', $empresa))
             ->assertRedirect(route('companies.index'));
         $this->assertSame(0, Empresa::count());
-        $this->assertDatabaseMissing('empresas', [
-            'id' => $empresa->id,
-        ]);
         Storage::disk('logos')->assertMissing($filename);
     }
 }

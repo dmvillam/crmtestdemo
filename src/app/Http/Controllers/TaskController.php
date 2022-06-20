@@ -63,7 +63,7 @@ class TaskController extends Controller
             'tipo_mantenimiento'    => 'required',
             'nombre'                => 'required',
             'user_id'               => 'required',
-            'periodicidad'          => 'required',
+            'periodicidad'          => 'required|numeric|multiple_of:5',
             'notif_nombre'          => 'required_unless:notificacion,null',
             'plantilla_id'          => 'required_unless:notificacion,null',
             'telefono'              => 'required_with_all:notificacion,notificar_sms',
@@ -80,10 +80,11 @@ class TaskController extends Controller
         }
 
         $data = $validator->validated();
-
         if (isset($data['notificacion'])) {
             $tarea = Tarea::create($data);
             $data['nombre'] = $data['notif_nombre'];
+            $data['notificar_email'] = isset($data['notificar_email']) ? 1 : 0;
+            $data['notificar_sms'] = isset($data['notificar_sms']) ? 1 : 0;
             $notificacion = Notificacion::create($data);
             $tarea->notificacion_id = $notificacion->id;
             $tarea->save();
@@ -100,7 +101,7 @@ class TaskController extends Controller
             'tipo_mantenimiento'    => 'required',
             'nombre'                => 'required',
             'user_id'               => 'required',
-            'periodicidad'          => 'required',
+            'periodicidad'          => 'required|numeric|multiple_of:5',
             'notif_nombre'          => 'required_unless:notificacion,null',
             'plantilla_id'          => 'required_unless:notificacion,null',
             'telefono'              => 'required_with_all:notificacion,notificar_sms',
