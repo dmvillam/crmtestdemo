@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmpresaController;
-use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TareaController;
+use App\Http\Controllers\PlantillaController;
 
 Auth::routes();
 
@@ -36,9 +37,16 @@ Route::get(     '/empresas/{empresa}/editar',   [EmpresaController::class, 'edit
 Route::put(     '/empresas/{empresa}',          [EmpresaController::class, 'update'])  ->name('companies.update');
 Route::delete(  '/empresas/{empresa}',          [EmpresaController::class, 'destroy']) ->name('companies.delete');
 
-Route::get(     '/tareas',                [TaskController::class, 'index'])   ->name('tasks.index');
-Route::post(    '/tareas',                [TaskController::class, 'store'])   ->name('tasks.store');
-Route::get(     '/tareas/{tarea}',         [TaskController::class, 'show'])    ->name('tasks.show');
-Route::get(     '/tareas/{tarea}/editar',  [TaskController::class, 'edit'])    ->name('tasks.edit');
-Route::put(     '/tareas/{tarea}',         [TaskController::class, 'update'])  ->name('tasks.update');
-Route::delete(  '/tareas/{tarea}',         [TaskController::class, 'destroy']) ->name('tasks.delete');
+Route::get(     '/tareas',                	[TareaController::class, 'index'])   ->name('tasks.index');
+Route::post(    '/tareas',                	[TareaController::class, 'store'])   ->name('tasks.store');
+Route::get(     '/tareas/{tarea}',         	[TareaController::class, 'show'])    ->name('tasks.show');
+Route::get(     '/tareas/{tarea}/editar',	[TareaController::class, 'edit'])    ->name('tasks.edit');
+Route::put(     '/tareas/{tarea}',         	[TareaController::class, 'update'])  ->name('tasks.update');
+Route::delete(  '/tareas/{tarea}',         	[TareaController::class, 'destroy']) ->name('tasks.delete');
+
+Route::get(     '/plantillas',                		[PlantillaController::class, 'index'])   ->name('templates.index');
+Route::post(    '/plantillas',                		[PlantillaController::class, 'store'])   ->name('templates.store');
+Route::get(     '/plantillas/{plantilla}',         	[PlantillaController::class, 'show'])    ->name('templates.show');
+Route::get(     '/plantillas/{plantilla}/editar',  	[PlantillaController::class, 'edit'])    ->name('templates.edit');
+Route::put(     '/plantillas/{plantilla}',         	[PlantillaController::class, 'update'])  ->name('templates.update');
+Route::delete(  '/plantillas/{plantilla}',         	[PlantillaController::class, 'destroy']) ->name('templates.delete');

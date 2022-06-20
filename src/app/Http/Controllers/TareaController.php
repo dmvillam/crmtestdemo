@@ -12,7 +12,7 @@ use App\Models\Tarea;
 use App\Models\Plantilla;
 use App\Models\Notificacion;
 
-class TaskController extends Controller
+class TareaController extends Controller
 {
     /**
      * Create a new controller instance.

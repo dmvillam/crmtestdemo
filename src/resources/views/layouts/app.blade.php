@@ -132,6 +132,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link @if (Route::currentRouteName()=='templates.index') active @endif" href="{{route('templates.index')}}">
+              <span data-feather="file" class="align-text-bottom"></span>
+              Plantillas para notificaciones
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link @if (Route::currentRouteName()=='tasks.index') active @endif" href="{{route('tasks.index')}}">
               <span data-feather="bar-chart-2" class="align-text-bottom"></span>
               Tareas
@@ -139,12 +145,6 @@
           </li>
 
           <?php /*
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              <span data-feather="file" class="align-text-bottom"></span>
-              Customers
-            </a>
-          </li>
           <li class="nav-item">
             <a class="nav-link" href="#">
               <span data-feather="shopping-cart" class="align-text-bottom"></span>
