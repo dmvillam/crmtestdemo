@@ -50,3 +50,4 @@ Route::get(     '/plantillas/{plantilla}',         	[PlantillaController::class,
 Route::get(     '/plantillas/{plantilla}/editar',  	[PlantillaController::class, 'edit'])    ->name('templates.edit');
 Route::put(     '/plantillas/{plantilla}',         	[PlantillaController::class, 'update'])  ->name('templates.update');
 Route::delete(  '/plantillas/{plantilla}',         	[PlantillaController::class, 'destroy']) ->name('templates.delete');
+Route::post(	'/plantillas/upload',               [PlantillaController::class, 'upload'])	 ->name('templates.upload');

@@ -10,6 +10,8 @@ use App\Models\Plantilla;
 
 class PlantillaController extends Controller
 {
+    private $tinymce_key = "4r1iu4omrhlz3v91a6ho8qokiuqb49x2v8o92gegp8gf5arb";
+
     /**
      * Create a new controller instance.
      *
@@ -23,7 +25,8 @@ class PlantillaController extends Controller
     public function index()
     {
         $plantillas = Plantilla::all();
-        return view('templates.index', compact('plantillas'));
+        $tinymce_key = $this->tinymce_key;
+        return view('templates.index', compact('plantillas', 'tinymce_key'));
     }
 
     public function show(Plantilla $plantilla)
@@ -37,6 +40,14 @@ class PlantillaController extends Controller
     public function edit(Plantilla $plantilla)
     {
         return response()->json($plantilla->toArray());
+    }
+
+    public function upload()
+    {
+        if (request()->file('fileimage')) {
+            $path = request()->file('fileimage')->store('/', 'uploads');
+            return response()->json(["/storage/uploads/$path"]); 
+        }
     }
 
     public function store()
@@ -54,7 +65,7 @@ class PlantillaController extends Controller
         }
 
         $data = $validator->validated();
-        $Plantilla = plantilla::create($data);
+        $plantilla = plantilla::create($data);
 
         return redirect()->route('templates.index')->with('status', "¡Plantilla *{$plantilla->nombre}* creada de manera exitosa!");
     }

@@ -29,7 +29,7 @@
         <h1 class="h2">Plantillas para notificaciones</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
           <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modal-crear-plantilla">
-            Crear usuario
+            Crear plantilla
           </button>
         </div>
       </div>
@@ -82,6 +82,8 @@
 @endsection
 
 @section('scripts')
+@include('templates.partials.tinymce-script')
+
 <script type="text/javascript">
   $(document).ready(function(){
     $('[data-bs-toggle=tooltip]').tooltip()
