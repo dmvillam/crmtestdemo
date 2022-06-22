@@ -15,9 +15,19 @@
           <input type="hidden" name="id" id="edit_id" value="{{old('id')}}">
           <div class="mb-3">
             <label for="nombre" class="col-form-label">Nombre <span class="text-danger">*</span></label>
-            <input type="text" class="form-control @error('nombre', 'update') is-invalid @enderror" id="edit_nombre" name="nombre" placeholder="Nombre" value="{{ old('nombre') }}">
+            <input type="text" class="form-control @error('nombre', 'update') is-invalid @enderror" id="edit_nombre" name="nombre" placeholder="Nombre de la plantilla" value="{{ old('nombre') }}">
           </div>
           @error('nombre', 'update')<div class="invalid-feedback">{{ $message }}</div>@enderror
+          <div class="mb-3">
+            <label for="descripcion_larga" class="col-form-label">Descripción larga (email) <span class="text-danger">*</span></label>
+            <textarea class="form-control @error('descripcion_larga', 'update') is-invalid @enderror" id="edit_descripcion_larga" name="descripcion_larga" rows="5" placeholder="Descripción larga (email)">{{ old('descripcion_larga') }}</textarea>
+          </div>
+          @error('descripcion_larga', 'update')<div class="invalid-feedback">{{ $message }}</div>@enderror
+          <div class="mb-3">
+            <label for="descripcion_corta" class="col-form-label">Descripción corta (SMS) <span class="text-danger">*</span></label>
+            <input type="text" class="form-control @error('descripcion_corta', 'update') is-invalid @enderror" id="edit_descripcion_corta" name="descripcion_corta" placeholder="Descripción corta (SMS)" value="{{ old('descripcion_corta') }}">
+          </div>
+          @error('descripcion_corta', 'update')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </form>
       </div>
       <div class="modal-footer">

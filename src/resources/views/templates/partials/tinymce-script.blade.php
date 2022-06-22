@@ -2,7 +2,7 @@
 
     <script type="text/javascript">
         tinymce.init({
-          selector: '#descripcion_larga',
+          selector: '#descripcion_larga, #edit_descripcion_larga',
           height: 250,
           plugins: [
             'advlist autolink lists link image charmap print preview hr anchor pagebreak',
@@ -59,8 +59,8 @@
           },
           setup:function(editor) {
                editor.on('change', function(e) {
-                   $('#descripcion_larga').text(editor.getContent());
-                   $('#descripcion_larga').val(editor.getContent());
+                   $('#descripcion_larga, #edit_descripcion_larga').text(editor.getContent());
+                   $('#descripcion_larga, #edit_descripcion_larga').val(editor.getContent());
                });
            }
         });
@@ -72,10 +72,5 @@
                 .append('<input id="fileimage" name="fileimage" type="file" accept="image/*">')
                 .append('{{ csrf_field() }}');
               inputImage = document.getElementById("fileimage");
-
-              $("body").append("<form method='post' enctype='multipart/form-data' action='{{route('templates.upload')}}' class='hide' id='formfile' style='display:none'></form>");
-              $("#formfile").append('<input id="filefile" name="filefile" type="file">');
-              inputFile = document.getElementById("filefile");
-
         })
     </script>

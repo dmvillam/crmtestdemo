@@ -51,3 +51,7 @@ Route::get(     '/plantillas/{plantilla}/editar',  	[PlantillaController::class,
 Route::put(     '/plantillas/{plantilla}',         	[PlantillaController::class, 'update'])  ->name('templates.update');
 Route::delete(  '/plantillas/{plantilla}',         	[PlantillaController::class, 'destroy']) ->name('templates.delete');
 Route::post(	'/plantillas/upload',               [PlantillaController::class, 'upload'])	 ->name('templates.upload');
+
+Route::get('/test', function() {
+	dd(route('templates.index'), route('companies.index'));
+});

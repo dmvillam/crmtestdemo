@@ -154,10 +154,13 @@
         dataType: 'json',
         success: function(plantilla) {
           $.each( plantilla , function(key, value) {
-            $(`#edit_${key}`).val(value)
+            var element = $(`#edit_${key}`)
+            if (element.length>0 && element.prop("tagName").toLowerCase() == 'textarea')
+              tinymce.get(`edit_${key}`).setContent(value)
+            else $(`#edit_${key}`).val(value)
           })
           $('#modal-editar-plantilla .modal-title').html(`Editar detalles de plantilla: ${plantilla.nombre}`)
-          var myModal = new bootstrap.Modal(document.getElementById('modal-user-edit'))
+          var myModal = new bootstrap.Modal(document.getElementById('modal-editar-plantilla'))
           myModal.show()
         },
         error: function(xhr, status) {
