@@ -515,7 +515,7 @@ class TasksModuleTest extends TestCase
         Mail::assertSent(NotificacionMail::class);
 
         Mail::assertSent(function (NotificacionMail $mail) use ($notificacion) {
-            return $mail->notificacion->id === $notificacion->id;
+            return $mail->plantilla->id === $notificacion->plantilla->id;
         });
 
         $this->travel(5)->minutes();
@@ -531,7 +531,7 @@ class TasksModuleTest extends TestCase
         Mail::assertSent(NotificacionMail::class);
 
         Mail::assertSent(function (NotificacionMail $mail) use ($notificacion) {
-            return $mail->notificacion->id === $notificacion->id;
+            return $mail->plantilla->id === $notificacion->plantilla->id;
         });
     }
 }

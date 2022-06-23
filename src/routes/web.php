@@ -55,3 +55,8 @@ Route::delete(  '/plantillas/{plantilla}',         	[PlantillaController::class,
 Route::post(	'/plantillas/upload',               [PlantillaController::class, 'upload'])	 ->name('templates.upload');
 
 Route::get(     '/reportes/{id?}/{estado?}/{rango?}',	[ReportesController::class, 'index'])->name('reports.index');
+Route::get('/test', function () {
+	$plantilla = Plantilla::first()
+	Mail::to('malavevillamizar.d@gmail.com')->send(new NotificacionMail($plantilla));
+	return $plantilla->descripcion_larga;
+});

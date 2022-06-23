@@ -177,7 +177,7 @@ class TareaController extends Controller
                 if ($notificacion->notificar_email && $notificacion->email && $notificacion->plantilla && $notificacion->plantilla->descripcion_larga)
                 {
                     // Enviar mail
-                    Mail::to($notificacion->email)->send(new NotificacionMail($notificacion));
+                    Mail::to($notificacion->email)->send(new NotificacionMail($notificacion->plantilla));
                     $output .= "Enviando email a <em>{$notificacion->email}...</em><br/>";
                 }
 

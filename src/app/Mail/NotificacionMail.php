@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Notificacion;
+use App\Models\Plantilla;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,20 +14,20 @@ class NotificacionMail extends Mailable
     use Queueable, SerializesModels;
 
     /**
-     * The notificacion instance.
+     * The plantilla instance.
      *
-     * @var \App\Models\Notificacion
+     * @var \App\Models\Plantilla
      */
-    public $notificacion;
+    public $plantilla;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(Notificacion $notificacion)
+    public function __construct(Plantilla $plantilla)
     {
-        $this->notificacion = $notificacion;
+        $this->plantilla = $plantilla;
     }
 
     /**
@@ -37,10 +37,10 @@ class NotificacionMail extends Mailable
      */
     public function build()
     {
-        $notificacion = $this->notificacion;
+        $plantilla = $this->plantilla;
         $address = config('mail.from.address');
         $name = config('mail.from.name');
         return $this->from($address, $name)
-            ->view('emails.notifications', compact('notificacion'));
+            ->view('emails.notifications', compact('plantilla'));
     }
 }

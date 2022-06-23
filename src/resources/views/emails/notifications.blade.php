@@ -1,1 +1,1 @@
-{!! $notificacion->plantilla->descripcion_larga !!}
+{!! $plantilla->descripcion_larga !!}
