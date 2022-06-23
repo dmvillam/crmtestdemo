@@ -32,10 +32,10 @@ class ReportesController extends Controller
         else $notificaciones = Notificacion::all();
 
         if ($rango && count(explode(" - ", $rango)) == 2) {
-            $from = date('Y-m-d H:i:s', strtotime(str_replace('-', '/', explode(" - ", $rango)[0])));
-            $to = date('Y-m-d H:i:s', strtotime(str_replace('-', '/', explode(" - ", $rango)[1])));
-            $notificaciones = $notificaciones->where('created_at','>',$from)
-                ->where('created_at','<',$to);
+            $from = date('Y-m-d', strtotime(str_replace('-', '/', explode(" - ", $rango)[0]))) . " 00:00:00";
+            $to = date('Y-m-d', strtotime(str_replace('-', '/', explode(" - ", $rango)[1]))) . " 23:59:59";
+            $notificaciones = $notificaciones->where('next_activity','>',$from)
+                ->where('next_activity','<',$to);
         }
 
         return view('reports.index', compact('notificaciones', 'clientes'));

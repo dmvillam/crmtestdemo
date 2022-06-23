@@ -66,7 +66,7 @@
               <td>{{ $notificacion->id }}</td>
               <td>{{ $notificacion->tarea->cliente->nombre }}</td>
               <td><div class="descripcion-larga">{!! $notificacion->plantilla->descripcion_larga !!}</div></td>
-              <td>{{$notificacion->created_at}}</td>
+              <td>{{$notificacion->next_activity}}</td>
               <td>?</td>
             </tr>
             @empty
@@ -75,12 +75,6 @@
           </tbody>
         </table>
       </div>
-
-      <form id="form-eliminar-usuario" method="POST">
-        {{ csrf_field() }}
-        <input type="hidden" name="_method" value="DELETE"/>
-        <input type="hidden" name="delete_user" id="delete_user" value="">
-      </form>
 
       <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div id="liveToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
@@ -108,8 +102,9 @@
         ],
         dom: 'Bfrtip',
           "columnDefs": [
-            { "width": "45%", "targets": 2 }
-          ]
+            { "width": "45%", "targets": 2 },
+            { "targets": 3, render: $.fn.dataTable.render.moment( 'YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY HH:mm:ss' ) }
+          ],
       })
     }
 

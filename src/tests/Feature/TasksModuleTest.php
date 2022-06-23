@@ -45,8 +45,6 @@ class TasksModuleTest extends TestCase
             'nombre'=>'Tarea 2', 'notificacion_id'=>$notificacion2->id, 'user_id'=>$cliente2->id
         ]);
         Rol::create(['nombre' => 'Cliente']);
-        $tarea1->save();
-        $tarea2->save();
 
         $response = $this->actingAs($fake_user)
             ->get(route('tasks.index'))
