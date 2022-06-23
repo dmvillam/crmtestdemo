@@ -18,10 +18,20 @@
     max-height: 150px;
     overflow: auto;
   }
+  @media(max-width: 575px) {
+    .input-daterange, .btn-group, .btn-generar-reporte, .btn-toolbar {
+      width: 100%;
+    }
+    .btn-group > select {
+      width: 100%;
+    }
+  }
+  @media(min-width: 992px) {
+    .input-daterange {
+      width: 200px;
+    }
+  }
 </style>
-@endsection
-
-@section('modals')
 @endsection
 
 @section('content')
@@ -29,9 +39,9 @@
         <h1 class="h2">Reportes</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
 
-          <input type="text" name="daterange" class="btn btn-sm btn-outline-secondary input-daterange me-2">
+          <input type="text" name="daterange" class="btn btn-sm btn-outline-secondary input-daterange me-2 mb-2">
 
-          <div class="btn-group me-2">
+          <div class="btn-group me-2 mb-2">
             <select class="btn btn-sm btn-outline-secondary select-clientes">
               <option value="0">Seleccione al cliente</option>
               @foreach($clientes as $cliente)
@@ -43,7 +53,7 @@
             </select>
           </div>
 
-          <button type="button" class="btn btn-sm btn-outline-secondary btn-generar-reporte">
+          <button type="button" class="btn btn-sm btn-outline-secondary btn-generar-reporte me-2 mb-2">
             Generar reporte
           </button>
         </div>
