@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+use App\Models\Plantilla;
+use App\Mail\NotificacionMail;
+use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
@@ -55,8 +58,9 @@ Route::delete(  '/plantillas/{plantilla}',         	[PlantillaController::class,
 Route::post(	'/plantillas/upload',               [PlantillaController::class, 'upload'])	 ->name('templates.upload');
 
 Route::get(     '/reportes/{id?}/{estado?}/{rango?}',	[ReportesController::class, 'index'])->name('reports.index');
+
 Route::get('/test', function () {
-	$plantilla = Plantilla::first()
+	$plantilla = Plantilla::first();
 	Mail::to('malavevillamizar.d@gmail.com')->send(new NotificacionMail($plantilla));
 	return $plantilla->descripcion_larga;
 });
