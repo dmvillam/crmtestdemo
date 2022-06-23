@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 use App\Models\Rol;
 use App\Models\User;
 use App\Models\Tarea;
 use App\Models\Plantilla;
 use App\Models\Notificacion;
+
+use App\Mail\NotificacionMail;
 
 use Carbon\Carbon;
 
@@ -174,6 +177,7 @@ class TareaController extends Controller
                 if ($notificacion->notificar_email && $notificacion->email && $notificacion->plantilla && $notificacion->plantilla->descripcion_larga)
                 {
                     // Enviar mail
+                    Mail::to($notificacion->email)->send(new NotificacionMail($notificacion));
                     $output .= "Enviando email a <em>{$notificacion->email}...</em><br/>";
                 }
 

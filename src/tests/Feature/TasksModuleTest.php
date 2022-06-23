@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 use App\Models\User;
@@ -11,6 +12,8 @@ use App\Models\Rol;
 use App\Models\Tarea;
 use App\Models\Notificacion;
 use App\Models\Plantilla;
+
+use App\Mail\NotificacionMail;
 
 class TasksModuleTest extends TestCase
 {
@@ -486,9 +489,11 @@ class TasksModuleTest extends TestCase
     }
 
     /** @test **/
-    function doing_the_schedule_routine()
+    function doing_the_schedule_routine_with_mails_and_sms()
     {
         $fake_user = $this->getFakeUser();
+
+        Mail::fake();
         
         $cliente = User::factory()->create();
         $plantilla = Plantilla::factory()->create();
@@ -507,6 +512,12 @@ class TasksModuleTest extends TestCase
             ->assertSee("Enviando SMS a")
             ->assertSee($notificacion->telefono);
 
+        Mail::assertSent(NotificacionMail::class);
+
+        Mail::assertSent(function (NotificacionMail $mail) use ($notificacion) {
+            return $mail->notificacion->id === $notificacion->id;
+        });
+
         $this->travel(5)->minutes();
 
         $this->actingAs($fake_user)
@@ -516,5 +527,11 @@ class TasksModuleTest extends TestCase
             ->assertSee($notificacion->email)
             ->assertSee("Enviando SMS a")
             ->assertSee($notificacion->telefono);
+
+        Mail::assertSent(NotificacionMail::class);
+
+        Mail::assertSent(function (NotificacionMail $mail) use ($notificacion) {
+            return $mail->notificacion->id === $notificacion->id;
+        });
     }
 }
