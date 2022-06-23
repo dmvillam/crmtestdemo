@@ -22,6 +22,8 @@ class CreateNotificacionesTable extends Migration
             $table->string('email')->nullable();
             $table->boolean('notificar_email');
             $table->boolean('notificar_sms');
+            $table->dateTime('last_activity')->nullable();
+            $table->dateTime('next_activity')->nullable();
             $table->timestamps();
         });
     }

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Rol;
 use App\Models\Tarea;
 use App\Models\Notificacion;
+use App\Models\Plantilla;
 
 class TasksModuleTest extends TestCase
 {
@@ -484,5 +485,38 @@ class TasksModuleTest extends TestCase
             ->assertRedirect(route('tasks.index'));
         $this->assertSame(0, Tarea::count());
         $this->assertSame(0, Notificacion::count());
+    }
+
+    /** @test **/
+    function doing_the_schedule_routine()
+    {
+        $fake_user = $this->getFakeUser();
+        
+        $cliente = User::factory()->create();
+        $plantilla = Plantilla::factory()->create();
+        $notificacion = Notificacion::factory()->create([
+            'user_id'=>$cliente->id, 'plantilla_id'=>$plantilla->id, 'notificar_email'=>1, 'notificar_sms'=>1,
+        ]);
+        $tarea = Tarea::factory()->create([
+            'user_id'=>$cliente->id, 'notificacion_id' => $notificacion->id, 'periodicidad'=>5
+        ]);
+
+        $this->actingAs($fake_user)
+            ->get(route('tasks.cron'))
+            ->assertStatus(200)
+            ->assertSee("Enviando email a")
+            ->assertSee($notificacion->email)
+            ->assertSee("Enviando SMS a")
+            ->assertSee($notificacion->telefono);
+
+        $this->travel(5)->minutes();
+
+        $this->actingAs($fake_user)
+            ->get(route('tasks.cron'))
+            ->assertStatus(200)
+            ->assertSee("Enviando email a")
+            ->assertSee($notificacion->email)
+            ->assertSee("Enviando SMS a")
+            ->assertSee($notificacion->telefono);
     }
 }

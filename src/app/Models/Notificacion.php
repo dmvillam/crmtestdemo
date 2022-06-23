@@ -17,7 +17,7 @@ class Notificacion extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'nombre', 'user_id', 'plantilla_id', 'telefono', 'email', 'notificar_email', 'notificar_sms'
+        'nombre', 'user_id', 'plantilla_id', 'telefono', 'email', 'notificar_email', 'notificar_sms', 'last_activity'
     ];
 
     /*
@@ -26,5 +26,15 @@ class Notificacion extends Model
     public function tarea()
     {
         return $this->hasOne(Tarea::class);
+    }
+    
+    public function cliente()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function plantilla()
+    {
+        return $this->hasOne(Plantilla::class, 'id', 'plantilla_id');
     }
 }

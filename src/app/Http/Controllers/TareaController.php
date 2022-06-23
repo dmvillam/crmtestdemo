@@ -12,6 +12,8 @@ use App\Models\Tarea;
 use App\Models\Plantilla;
 use App\Models\Notificacion;
 
+use Carbon\Carbon;
+
 class TareaController extends Controller
 {
     /**
@@ -85,6 +87,7 @@ class TareaController extends Controller
             $data['nombre'] = $data['notif_nombre'];
             $data['notificar_email'] = isset($data['notificar_email']) ? 1 : 0;
             $data['notificar_sms'] = isset($data['notificar_sms']) ? 1 : 0;
+            $data['last_activity'] = date('Y-m-d H:i:s', 0);
             $notificacion = Notificacion::create($data);
             $tarea->notificacion_id = $notificacion->id;
             $tarea->save();
@@ -126,6 +129,7 @@ class TareaController extends Controller
             if ($tarea->notificacion) {
                 $tarea->notificacion->update($data);
             } else {
+                $data['last_activity'] = date('Y-m-d H:i:s', 0);
                 $notificacion = Notificacion::create($data);
                 $tarea->notificacion_id = $notificacion->id;
                 $tarea->save();
@@ -148,5 +152,39 @@ class TareaController extends Controller
         $tarea->delete();
         
         return redirect()->route('tasks.index')->with('status', "¡Tarea *{$tarea->nombre}* eliminada de manera exitosa!");
+    }
+
+    private function addMinutesToDate($minutes, $date)
+    {
+        return date('Y-m-d H:i:s', strtotime($date) + $minutes*60);
+    }
+
+    public function cron()
+    {
+        $output = "";
+        foreach(Notificacion::all() as $notificacion)
+        {
+            $now = Carbon::now()->format('Y-m-d H:i:s');
+            $next_time = $this->addMinutesToDate($notificacion->tarea->periodicidad, $notificacion->last_activity);
+            if ($now >= $next_time) {
+                $notificacion->last_activity = $now;
+                $notificacion->next_activity = $this->addMinutesToDate($notificacion->tarea->periodicidad, $now);
+                $notificacion->save();
+
+                if ($notificacion->notificar_email && $notificacion->email && $notificacion->plantilla && $notificacion->plantilla->descripcion_larga)
+                {
+                    // Enviar mail
+                    $output .= "Enviando email a <em>{$notificacion->email}...</em><br/>";
+                }
+
+                if ($notificacion->notificar_sms && $notificacion->telefono && $notificacion->plantilla && $notificacion->plantilla->descripcion_corta)
+                {
+                    // Enviar SMS
+                    $output .= "Enviando SMS a <em>{$notificacion->telefono}...</em><br/>";
+                }
+            }
+        }
+
+        return $output;
     }
 }

@@ -21,6 +21,8 @@ class NotificacionFactory extends Factory
             'email' => $this->faker->companyEmail(),
             'notificar_email' => rand(0,1),
             'notificar_sms' => rand(0,1),
+            'last_activity' => date('Y-m-d H:i:s', 0),
+            'next_activity' => null,
         ];
     }
 }

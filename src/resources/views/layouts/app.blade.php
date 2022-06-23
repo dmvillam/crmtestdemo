@@ -113,46 +113,24 @@
     <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
       <div class="position-sticky pt-3">
         <ul class="nav flex-column">
+          <?php
+            $links = [
+              ['route' => 'home',            'icon' => 'home',         'label' => 'Principal'],
+              ['route' => 'users.index',     'icon' => 'users',        'label' => 'Usuarios'],
+              ['route' => 'companies.index', 'icon' => 'layers',       'label' => 'Empresas'],
+              ['route' => 'templates.index', 'icon' => 'file',         'label' => 'Plantillas para notificaciones'],
+              ['route' => 'tasks.index',     'icon' => 'bar-chart-2',  'label' => 'Tareas'],
+              ['route' => 'reports.index',   'icon' => 'book-open',    'label' => 'Reportes'],
+            ];
+          ?>
+          @foreach($links as $link)
           <li class="nav-item">
-            <a class="nav-link @if (Route::currentRouteName()=='home') active @endif" aria-current="page" href="{{route('home')}}">
-              <span data-feather="home" class="align-text-bottom"></span>
-              Principal
+            <a class="nav-link @if (Route::currentRouteName()==$link['route']) active @endif" aria-current="page" href="{{route($link['route'])}}">
+              <span data-feather="{{$link['icon']}}" class="align-text-bottom"></span>
+              {{$link['label']}}
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link @if (Route::currentRouteName()=='users.index') active @endif" href="{{route('users.index')}}">
-              <span data-feather="users" class="align-text-bottom"></span>
-              Usuarios
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link @if (Route::currentRouteName()=='companies.index') active @endif" href="{{route('companies.index')}}">
-              <span data-feather="layers" class="align-text-bottom"></span>
-              Empresas
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link @if (Route::currentRouteName()=='templates.index') active @endif" href="{{route('templates.index')}}">
-              <span data-feather="file" class="align-text-bottom"></span>
-              Plantillas para notificaciones
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link @if (Route::currentRouteName()=='tasks.index') active @endif" href="{{route('tasks.index')}}">
-              <span data-feather="bar-chart-2" class="align-text-bottom"></span>
-              Tareas
-            </a>
-          </li>
-
-          <?php /*
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              <span data-feather="shopping-cart" class="align-text-bottom"></span>
-              Integrations
-            </a>
-          </li>
-          */ ?>
-        </ul>
+          @endforeach
 
         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
           <span>Saved reports</span>
@@ -214,9 +192,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script>
     <script src="{{ asset('js') . '/dashboard.js' }}"></script>
  
+    <!-- Data tables -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.12.1/af-2.4.0/b-2.2.3/b-html5-2.2.3/b-print-2.2.3/date-1.1.2/r-2.3.0/datatables.min.js"></script>
+
+    <!-- Daterange picker -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
     @yield('scripts')
 

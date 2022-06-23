@@ -18,6 +18,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\PlantillaController;
+use App\Http\Controllers\ReportesController;
 
 Auth::routes();
 
@@ -37,6 +38,7 @@ Route::get(     '/empresas/{empresa}/editar',   [EmpresaController::class, 'edit
 Route::put(     '/empresas/{empresa}',          [EmpresaController::class, 'update'])  ->name('companies.update');
 Route::delete(  '/empresas/{empresa}',          [EmpresaController::class, 'destroy']) ->name('companies.delete');
 
+Route::get(		'/tareas/cron',         	[TareaController::class, 'cron']) 	 ->name('tasks.cron');
 Route::get(     '/tareas',                	[TareaController::class, 'index'])   ->name('tasks.index');
 Route::post(    '/tareas',                	[TareaController::class, 'store'])   ->name('tasks.store');
 Route::get(     '/tareas/{tarea}',         	[TareaController::class, 'show'])    ->name('tasks.show');
@@ -52,6 +54,4 @@ Route::put(     '/plantillas/{plantilla}',         	[PlantillaController::class,
 Route::delete(  '/plantillas/{plantilla}',         	[PlantillaController::class, 'destroy']) ->name('templates.delete');
 Route::post(	'/plantillas/upload',               [PlantillaController::class, 'upload'])	 ->name('templates.upload');
 
-Route::get('/test', function() {
-	dd(route('templates.index'), route('companies.index'));
-});
+Route::get(     '/reportes/{id?}/{estado?}/{rango?}',	[ReportesController::class, 'index'])->name('reports.index');

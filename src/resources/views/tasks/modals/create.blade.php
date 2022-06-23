@@ -38,7 +38,7 @@
           @error('user_id', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
           <div class="mb-3">
             <label for="periodicidad" class="col-form-label">Periodicidad (min)<span class="text-danger">*</span></label>
-            <input type="number" class="form-control @error('periodicidad', 'store') is-invalid @enderror" id="periodicidad" name="periodicidad" placeholder="Periodicidad" value="{{ old('periodicidad') }}" min="5" step="5">
+            <input type="number" class="form-control @error('periodicidad', 'store') is-invalid @enderror" id="periodicidad" name="periodicidad" placeholder="Periodicidad (En múltiplos de 5)." value="{{ old('periodicidad') }}" min="5" step="5">
           </div>
           @error('periodicidad', 'store')<div class="invalid-feedback">{{ $message }}</div>@enderror
           <div class="mb-3">

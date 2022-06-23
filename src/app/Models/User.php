@@ -62,4 +62,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tarea::class);
     }
+
+    public function notificaciones()
+    {
+        return $this->hasMany(Notificacion::class);
+    }
 }
