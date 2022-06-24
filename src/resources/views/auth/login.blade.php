@@ -24,12 +24,14 @@
                 </span>
             @enderror
           </div>
+          {{--
           <div class="checkbox mb-3">
               <label>
                 <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
                 <label class="form-check-label" for="remember">Recordarme</label>
               </label>
           </div>
+          --}}
           <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Acceder</button>
         </form>
 @endsection
